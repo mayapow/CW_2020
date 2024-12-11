@@ -1,5 +1,5 @@
 #Maya Powell
-#April, 2023 & 2024 for final pub stuff
+#August 2024 for final pub stuff
 #16S COMMUNITY COMPOSITION
 #Based on scripts from many people online (see packages for reference if you want lol)
 #and also some real live people: Ana Dulskiy (UNC Castillo lab), Nicola Kreifall (BU Davies Lab), Hannah Aichelman (BU Davies Lab) and Steph Smith (UNC Septer Lab)

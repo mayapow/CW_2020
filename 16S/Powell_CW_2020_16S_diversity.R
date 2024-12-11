@@ -1,9 +1,8 @@
 #Maya Powell
-#March 28th - April 3, 2023
-#August 17th 2023, making pub quality figures
-#August 13th 2024 FINISHING GRAPHS AND STATS
+#Final updates October 2024 FINISHING GRAPHS AND STATS
 #16S DIVERSITY analysis
 #Based on scripts from Anastasia Dulskiy and Nicola Kreifall and Hannah Aichelman
+#With help from Rachael Best on glms!
 setwd("~/Documents/Castillo Lab/CW_2020/CW_2020_16S")
 # Setup
 
@@ -27,7 +26,7 @@ library("lme4")
 library("glmmTMB")
 
 ##COMING BACK TO THIS ANALYSIS???
-##SEE LINE 80 TO READ IN DIVERSITY DATAFRAME!!!!!! WOOOHOOO!!
+##SEE LINE 83 TO READ IN DIVERSITY DATAFRAME!!!!!! WOOOHOOO!!
 
 ## Read in data
 #for this analysis - should be done on raw, untrimmed dataset
