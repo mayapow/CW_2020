@@ -1,6 +1,6 @@
 These data accompany the manuscript that is currently in review:
 
-# Stress-resistant symbionts and diverse microbial communities promote coral persistence in variable, multi-stressor environments
+# Stress-resistant Symbiodiniaceae and diverse microbial communities promote coral persistence in variable, multi-stressor environments
 
 Maya E. Powell, Sarah L. Solomon, Verena Schoepf, Karl D. Castillo
 
