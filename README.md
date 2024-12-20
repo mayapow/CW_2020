@@ -11,3 +11,5 @@ Maya E. Powell, Sarah L. Solomon, Verena Schoepf, Karl D. Castillo
 **16S:** DADA2 pipeline data preprocessing (preprocess and dada), alpha diversity analyses and graphs (Diversity), and beta diversity and community composition analyses and graphs (Community)
 
 **ITS2:** Community composition graphs, summary statistics, and comparisons of majority ITS2 types
+
+**Figures:** Final figures, both main text and supplementary
