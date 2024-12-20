@@ -670,7 +670,9 @@ setwd('~/Documents/Castillo Lab/CW_2020/CW_2020_ITS2/ITS2')
 ps.all <- readRDS("ps.all.its2.RDS")
 ps.all.rel <- transform_sample_counts(ps.all, function(x) x / sum(x))
 seq.all <- data.frame(ps.all.rel@otu_table)
-samdf.all <- data.frame(ps.all.rel@sam_data)
+#samdf.all <- data.frame(ps.all.rel@sam_data)
+samdf.all <- read.csv("sample_info_curacao_2020.csv")
+rownames(samdf.all) <- samdf.all$id
 
 #just majority ITS2 types
 ps <- readRDS("ps.its2.RDS")
@@ -745,16 +747,17 @@ seqtab.rel.sums.maj <- seqtab.rel.sums %>% select(-id)
 #col names of seqtab.rel.sums.maj match rownames of taxa.maj
 #rownames of seqtab.rel.sums.maj match rownames of samdf
 
+View(ps.its2.maj@otu_table)
 #make ps object of majority type sums
-ps.its2.maj <- phyloseq(sample_data(samdf),
-                       otu_table(seqtab.rel.sums.maj,taxa_are_rows=FALSE),
-                       tax_table(as.matrix(taxa.maj)))
-ps.its2.maj
-#phyloseq-class experiment-level object
-#otu_table()   OTU Table:          [ 11 taxa and 154 samples ]:
-#  sample_data() Sample Data:        [ 154 samples by 24 sample variables ]:
-#  tax_table()   Taxonomy Table:     [ 11 taxa by 2 taxonomic ranks ]:
-#  taxa are columns
+ps.its2.maj.new <- phyloseq(sample_data(samdf.all),
+                       otu_table(ps.its2.maj@otu_table,taxa_are_rows=FALSE),
+                       tax_table(as.matrix(ps.its2.maj@tax_table)))
+ps.its2.maj.new
+# phyloseq-class experiment-level object
+# otu_table()   OTU Table:          [ 11 taxa and 154 samples ]:
+# sample_data() Sample Data:        [ 154 samples by 33 sample variables ]:
+# tax_table()   Taxonomy Table:     [ 11 taxa by 2 taxonomic ranks ]:
+# taxa are columns
 
 plot_bar(ps.its2.maj, x="id",fill="maj_its2")+
   theme_classic()
@@ -766,24 +769,28 @@ its2_colors = c("A4_sum" = "#ffaabb", "C47a_sum" = "#99ddff","C42_sum" = "#22555
                      "C45_sum" = "#ee8860", "D1_sum" = "#994455")
 #"A4","B19","B5","B2","C46","C3","C47a","C1","C45","C42","D1"
 
-ps.its2.maj.nd = subset_samples(ps.its2.maj, id!= "D6" & id!="N10" & id!="N11" & id!="N12" & id!= "N1" & id!="N2" & id!="N3" & id!="N4" & id!="N5" & id!="N6" & id!="N7" & id!="N8" & id!="N9")
+ps.its2.maj.nd = subset_samples(ps.its2.maj.new, id!= "D6" & id!="N10" & id!="N11" & id!="N12" & id!= "N1" & id!="N2" & id!="N3" & id!="N4" & id!="N5" & id!="N6" & id!="N7" & id!="N8" & id!="N9")
 saveRDS(ps.its2.maj.nd,file = "ps.its2.maj.nd")
-saveRDS(ps.its2.maj,file = "ps.its2.maj")
+ps.its2.maj.nd <- readRDS("ps.its2.maj.nd")
+saveRDS(ps.its2.maj.new,file = "ps.its2.maj")
+ps.its2.maj <- readRDS("ps.its2.maj")
 
 ps.ss.maj <- subset_samples(ps.its2.maj.nd, host_species=="siderea")
 ps.sr.maj <- subset_samples(ps.its2.maj.nd, host_species=="radians")
 ps.pp.maj <- subset_samples(ps.its2.maj.nd, host_species=="porites")
 
+
+
 ###SIDERASTREA SIDEREA###
 ss.site <- plot_bar(ps.ss.maj, x="id", fill="maj_its2") +
   theme_classic(base_size = 30)+
   ylab("Relative Abundance")+
-  facet_wrap(~site_zone, scales = "free")+
+  facet_wrap(~site_zone.1, scales = "free")+
   scale_fill_manual(name = "Majority ITS2", values = its2_colors) +
   theme(axis.text.x=element_blank(),axis.ticks.x = element_blank(),axis.title.x = element_blank())+
   ggtitle(substitute(paste(italic("Siderastrea siderea"))))
 ss.site
-ggsave(ss.site,file="its2.ss.site.pdf",h=10,w=15)    
+#ggsave(ss.site,file="its2.ss.site.pdf",h=10,w=15)    
 
 #full plot - to put in supplementary, with all data across sites and time
 #numbers are individual samples here
@@ -791,23 +798,23 @@ ss.site.time <- plot_bar(ps.ss.maj, x = "number", fill="maj_its2") +
   theme_classic(base_size = 30)+
   xlab("Coral Genotype")+
   ylab("Relative Abundance")+
-  facet_wrap(m_y~site_zone, scales = "free") +
+  facet_wrap(m_y~site_zone.1, scales = "free") +
   scale_fill_manual(name = "Majority ITS2", values = its2_colors) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none")+
   ggtitle(substitute(paste(italic("Siderastrea siderea"))))
 ss.site.time
-ggsave(ss.site.time,file="its2.ss.site.time.pdf",h=15,w=25)    
+#ggsave(ss.site.time,file="its2.ss.site.time.pdf",h=15,w=25)    
 
 ###Siderastrea radians
 sr.site <- plot_bar(ps.sr.maj, x="id", fill="maj_its2") +
   theme_classic(base_size = 30)+
   ylab("Relative Abundance")+
-  facet_wrap(~site_zone, scales = "free")+
+  facet_wrap(~site_zone.1, scales = "free")+
   scale_fill_manual(name = "Majority ITS2", values = its2_colors) +
   theme(axis.text.x=element_blank(),axis.ticks.x = element_blank(),axis.title.x = element_blank())+
   ggtitle(substitute(paste(italic("Siderastrea radians"))))
 sr.site
-ggsave(sr.site,file="its2.sr.site.pdf",h=5,w=15)   
+#ggsave(sr.site,file="its2.sr.site.pdf",h=5,w=15)   
 
 #full plot - to put in supplementary, with all data acrosr sites and time
 #numbers are individual samples here
@@ -815,23 +822,23 @@ sr.site.time <- plot_bar(ps.sr.maj, x = "number", fill="maj_its2") +
   theme_classic(base_size = 30)+
   xlab("Coral Genotype")+
   ylab("Relative Abundance")+
-  facet_wrap(m_y~site_zone, scales = "free", nrow = 3, ncol = 2) +
+  facet_wrap(m_y~site_zone.1, scales = "free", nrow = 3, ncol = 2) +
   scale_fill_manual(name = "Majority ITS2", values = its2_colors) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none")+
   ggtitle(substitute(paste(italic("Siderastrea radians"))))
 sr.site.time
-ggsave(sr.site.time,file="its2.sr.site.time.pdf",h=15,w=15)  
+#ggsave(sr.site.time,file="its2.sr.site.time.pdf",h=15,w=15)  
 
 #####Branching Porites sp.
 pp.site <- plot_bar(ps.pp.maj, x="id", fill="maj_its2") +
   theme_classic(base_size = 30)+
   ylab("Relative Abundance")+
-  facet_wrap(~site_zone, scales = "free")+
+  facet_wrap(~site_zone.1, scales = "free")+
   scale_fill_manual(name = "Majority ITS2", values = its2_colors) +
   theme(axis.text.x=element_blank(),axis.ticks.x = element_blank(),axis.title.x = element_blank())+
-  ggtitle(substitute(paste(italic("Branching Porites sp."))))
+  ggtitle(substitute("Branching Porites sp."))
 pp.site
-ggsave(pp.site,file="its2.pp.site.pdf",h=5,w=15)   
+#ggsave(pp.site,file="its2.pp.site.pdf",h=5,w=15)   
 
 #full plot - to put in supplementary, with all data acropp sites and time
 #numbers are individual samples here
@@ -839,12 +846,12 @@ pp.site.time <- plot_bar(ps.pp.maj, x = "number", fill="maj_its2") +
   theme_classic(base_size = 30)+
   xlab("Coral Genotype")+
   ylab("Relative Abundance")+
-  facet_wrap(m_y~site_zone, scales = "free", nrow = 2, ncol = 2) +
+  facet_wrap(m_y~site_zone.1, scales = "free", nrow = 2, ncol = 2) +
   scale_fill_manual(name = "Majority ITS2", values = its2_colors) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "bottom")+
-  ggtitle(substitute(paste(italic("Branching Porites sp."))))
+  ggtitle(substitute("Branching Porites sp."))
 pp.site.time
-ggsave(pp.site.time,file="its2.pp.site.time.pdf",h=10,w=15)  
+#ggsave(pp.site.time,file="its2.pp.site.time.pdf",h=10,w=15)  
 
 
 ###put plots together
