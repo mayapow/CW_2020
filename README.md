@@ -6,7 +6,7 @@ Maya E. Powell, Sarah L. Solomon, Verena Schoepf, Karl D. Castillo
 
 **Please contact: Maya Powell at maya62928@gmail.com with questions**
 
-**Environmental Data:** Temperature (°C), pH, dissolved oxygen (mg/L), salinity (ppt), and photosynthetically active radiation (PAR) (umol/m2/s) data analyses and timeseries and average graphs
+**Environmental Data:** Temperature (°C), pHT, dissolved oxygen (mg/L), salinity (ppt), and photosynthetically active radiation (PAR) (umol/m2/s) data analyses and timeseries and average graphs
 
 **16S:** DADA2 pipeline data preprocessing (preprocess and dada), alpha diversity analyses and graphs (Diversity), and beta diversity and community composition analyses and graphs (Community)
 
