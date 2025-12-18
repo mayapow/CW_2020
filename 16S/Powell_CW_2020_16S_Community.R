@@ -1,12 +1,9 @@
 #Maya Powell
-#August 2024 for final pub stuff
+#Dec 2025 editing for manuscript revisions
 #16S COMMUNITY COMPOSITION
 #Based on scripts from many people online (see packages for reference if you want lol)
 #and also some real live people: Ana Dulskiy (UNC Castillo lab), Nicola Kreifall (BU Davies Lab), Hannah Aichelman (BU Davies Lab) and Steph Smith (UNC Septer Lab)
 
-# Setup
-#set working directory
-setwd("~/Documents/Castillo Lab/CW_2020/CW_2020_16S")
 #load in libraries
 library(rlang)
 library(stringr)
@@ -23,101 +20,105 @@ library("funfuns")
 #remotes::install_github("r-lib/rlang")
 library(phyloseq)
 library(microbiome)
-#install_github("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis")
+#remotes::install_github("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis")
 library(pairwiseAdonis)
 library(microbiomeutilities)
 library(viridis)
 #devtools::install_github("david-barnett/microViz")
 library("microViz")
+library("here")
 
 #ARE YOU COMING BACK TO THIS SCRIPT????
 #CHECK LINE 112 AND START THERE!!!!!!!!!! PLEASE!!! SAVE YOURSELF!!!
 
 ## Read in data
-load("CW_2020_16S_taxa2.Rdata")
+#load(here("16S","CW_2020_16S_taxa2.Rdata"))
 #load in Phyloseq objects
-ps.cleanest <- readRDS("CW_2020_16S_ps.cleanest.RDS")
-ps.cleanest #27653 taxa and 144 samples, RAW DATA untrimmed, unrarefied
+#ps.cleanest.nd <- readRDS(here("16S",here("16S","CW_2020_16S_ps.cleanest.nd.RDS"))
+#ps.cleanest.nd
+#27653 taxa and 134 samples
+#ps.cleanest #27653 taxa and 144 samples, RAW DATA untrimmed, unrarefied
 #remove duplicates from lane2 - they are very close (not stat sig dif) and lane 2 gets trimmed out earlier
-ps.cleanest.nd = subset_samples(ps.cleanest, id!="N10" & id!="N1" & id!="N2" & id!="N3" & id!="N4" & id!="N5" & id!="N6" & id!="N7" & id!="N8" & id!="N9")
+#ps.cleanest.nd = subset_samples(ps.cleanest, id!="N10" & id!="N1" & id!="N2" & id!="N3" & id!="N4" & id!="N5" & id!="N6" & id!="N7" & id!="N8" & id!="N9")
 #samdf.cleanest.nd <- data.frame(sample_data(ps.cleanest.nd))
 
-ps.less <- readRDS("CW_2020_16S_ps.less.RDS")
-ps.less #27653 taxa and 135 samples, samples witN counts <1,000 removed (9 samples removed)
-ps.less.nd = subset_samples(ps.less, id!="N10" & id!="N11" & id!="N2" & id!="N3" & id!="N4" & id!="N5" & id!="N6" & id!="N7" & id!="N8" & id!="N9")
+#ps.less.nd <- readRDS(here("16S",here("16S","CW_2020_16S_ps.less.nd.RDS"))
+#ps.less #27653 taxa and 135 samples, samples witN counts <1,000 removed (9 samples removed)
+#ps.less.nd = subset_samples(ps.less, id!="N10" & id!="N11" & id!="N2" & id!="N3" & id!="N4" & id!="N5" & id!="N6" & id!="N7" & id!="N8" & id!="N9")
 #samdf.less.nd <- data.frame(sample_data(ps.less.nd))
+#ps.less.nd
+#27653 taxa and 129 samples
 
-ps.rare <- readRDS("CW_2020_16S_ps.rare.RDS")
-ps.rare #23759 taxa and 98 samples, rarefied to 10,000 (46 samples removed)
-ps.rare.nd = subset_samples(ps.rare, id!="N10" & id!="N11" & id!="N2" & id!="N3" & id!="N4" & id!="N5" & id!="N6" & id!="N7" & id!="N8" & id!="N9")
+#ps.rare.nd <- readRDS(here("16S",here("16S","CW_2020_16S_ps.rare.nd.RDS"))
+#ps.rare #23759 taxa and 98 samples, rarefied to 10,000 (46 samples removed)
+#ps.rare.nd = subset_samples(ps.rare, id!="N10" & id!="N11" & id!="N2" & id!="N3" & id!="N4" & id!="N5" & id!="N6" & id!="N7" & id!="N8" & id!="N9")
 #samdf.rare.nd <- data.frame(sample_data(ps.rare.nd))
+#ps.rare.nd
+#23759 taxa and 94 samples
 
-ps.trim <- readRDS("CW_2020_16S_ps.trim.RDS")
-ps.trim #835 taxa and 134 samples, trimmed witN MCMC OTU for low abundance taxa (10 samples removed)
-ps.trim.nd = subset_samples(ps.trim, id!="N10" & id!="N11" & id!="N2" & id!="N3" & id!="N4" & id!="N5" & id!="N6" & id!="N7" & id!="N8" & id!="N9")
+#ps.trim.nd <- readRDS(here("16S",here("16S","CW_2020_16S_ps.trim.nd.RDS"))
+#ps.trim #835 taxa and 134 samples, trimmed witN MCMC OTU for low abundance taxa (10 samples removed)
+#ps.trim.nd = subset_samples(ps.trim, id!="N10" & id!="N11" & id!="N2" & id!="N3" & id!="N4" & id!="N5" & id!="N6" & id!="N7" & id!="N8" & id!="N9")
 #samdf.trim.nd <- data.frame(sample_data(ps.trim.nd))
-
-ps.trim.rare <- readRDS("CW_2020_16S_ps.trim.rare.RDS")
-ps.trim.rare #835 taxa and 120 samples, trimmed dataset rarefied to 3498 (24 samples removed)
-ps.trim.rare.nd = subset_samples(ps.trim.rare, id!="N10" & id!="N11" & id!="N2" & id!="N3" & id!="N4" & id!="N5" & id!="N6" & id!="N7" & id!="N8" & id!="N9")
-#samdf.trim.rare.nd <- data.frame(sample_data(ps.trim.rare.nd))
+#ps.trim.nd
+#835 taxa and 128 samples
 
 #Rename ASVs to be more informative
-#go through and do this with all different ones
-tax <- as.data.frame(ps.trim.rare.nd@tax_table@.Data)
-tax.clean <- data.frame(row.names = row.names(tax),
-                        Kingdom = str_replace(tax[,1], "D_0__",""),
-                        Phylum = str_replace(tax[,2], "D_1__",""),
-                        Class = str_replace(tax[,3], "D_2__",""),
-                        Order = str_replace(tax[,4], "D_3__",""),
-                        Family = str_replace(tax[,5], "D_4__",""),
-                        Genus = str_replace(tax[,6], "D_5__",""),
-                        Species = str_replace(tax[,7], "D_6__",""),
-                        stringsAsFactors = FALSE)
-tax.clean[is.na(tax.clean)] <- ""
-for (i in 1:7){ tax.clean[,i] <- as.character(tax.clean[,i])}
-####### Fill holes in the tax table
-tax.clean[is.na(tax.clean)] <- ""
-for (i in 1:nrow(tax.clean)){
-  if (tax.clean[i,2] == ""){
-    kingdom <- paste("Kingdom_", tax.clean[i,1], sep = "")
-    tax.clean[i, 2:7] <- kingdom
-  } else if (tax.clean[i,3] == ""){
-    phylum <- paste("Phylum_", tax.clean[i,2], sep = "")
-    tax.clean[i, 3:7] <- phylum
-  } else if (tax.clean[i,4] == ""){
-    class <- paste("Class_", tax.clean[i,3], sep = "")
-    tax.clean[i, 4:7] <- class
-  } else if (tax.clean[i,5] == ""){
-    order <- paste("Order_", tax.clean[i,4], sep = "")
-    tax.clean[i, 5:7] <- order
-  } else if (tax.clean[i,6] == ""){
-    family <- paste("Family_", tax.clean[i,5], sep = "")
-    tax.clean[i, 6:7] <- family
-  } else if (tax.clean[i,7] == ""){
-    tax.clean$Species[i] <- paste("Genus",tax.clean$Genus[i], sep = "_")
-  }
-}
-tax_table(ps.trim.rare.nd) <- as.matrix(tax.clean)
-#do this for each one, then save and subset below, then only need to do step above once
+#go through and do this with all different dataframes, as needed
+# tax <- as.data.frame(ps.trim.rare.nd@tax_table@.Data)
+# tax.clean <- data.frame(row.names = row.names(tax),
+#                         Kingdom = str_replace(tax[,1], "D_0__",""),
+#                         Phylum = str_replace(tax[,2], "D_1__",""),
+#                         Class = str_replace(tax[,3], "D_2__",""),
+#                         Order = str_replace(tax[,4], "D_3__",""),
+#                         Family = str_replace(tax[,5], "D_4__",""),
+#                         Genus = str_replace(tax[,6], "D_5__",""),
+#                         Species = str_replace(tax[,7], "D_6__",""),
+#                         stringsAsFactors = FALSE)
+# tax.clean[is.na(tax.clean)] <- ""
+# for (i in 1:7){ tax.clean[,i] <- as.character(tax.clean[,i])}
+# ####### Fill holes in the tax table
+# tax.clean[is.na(tax.clean)] <- ""
+# for (i in 1:nrow(tax.clean)){
+#   if (tax.clean[i,2] == ""){
+#     kingdom <- paste("Kingdom_", tax.clean[i,1], sep = "")
+#     tax.clean[i, 2:7] <- kingdom
+#   } else if (tax.clean[i,3] == ""){
+#     phylum <- paste("Phylum_", tax.clean[i,2], sep = "")
+#     tax.clean[i, 3:7] <- phylum
+#   } else if (tax.clean[i,4] == ""){
+#     class <- paste("Class_", tax.clean[i,3], sep = "")
+#     tax.clean[i, 4:7] <- class
+#   } else if (tax.clean[i,5] == ""){
+#     order <- paste("Order_", tax.clean[i,4], sep = "")
+#     tax.clean[i, 5:7] <- order
+#   } else if (tax.clean[i,6] == ""){
+#     family <- paste("Family_", tax.clean[i,5], sep = "")
+#     tax.clean[i, 6:7] <- family
+#   } else if (tax.clean[i,7] == ""){
+#     tax.clean$Species[i] <- paste("Genus",tax.clean$Genus[i], sep = "_")
+#   }
+# }
+# tax_table(ps.trim.rare.nd) <- as.matrix(tax.clean)
+# #do this for each one, then save and subset below, then only need to do step above once
 
 #resaving and reading in nd dataframes with cleaned up tax tables
 #can always redo from beginning
-saveRDS(ps.cleanest.nd, "CW_2020_16S_ps.cleanest.nd.RDS")
-saveRDS(ps.less.nd, "CW_2020_16S_ps.less.nd.RDS")
-saveRDS(ps.rare.nd, "CW_2020_16S_ps.rare.nd.RDS")
-saveRDS(ps.trim.nd, "CW_2020_16S_ps.trim.nd.RDS")
-saveRDS(ps.trim.rare.nd, "CW_2020_16S_ps.trim.rare.nd.RDS")
+# saveRDS(ps.cleanest.nd, "CW_2020_16S_ps.cleanest.nd.RDS")
+# saveRDS(ps.less.nd, "CW_2020_16S_ps.less.nd.RDS")
+# saveRDS(ps.rare.nd, "CW_2020_16S_ps.rare.nd.RDS")
+# saveRDS(ps.trim.nd, "CW_2020_16S_ps.trim.nd.RDS")
+# saveRDS(ps.trim.rare.nd, "CW_2020_16S_ps.trim.rare.nd.RDS")
 
 #coming back to this script - START HERE and just read in phyloseq objects
 #these have cleaned up tax tables and no duplicate samples
 #and now these have all the environmental data added! MP 4/20/2023
-ps.cleanest.nd <- readRDS("CW_2020_16S_ps.cleanest.nd.RDS")
-ps.less.nd <- readRDS("CW_2020_16S_ps.less.nd.RDS")
+#ps.cleanest.nd <- readRDS(here("16S","CW_2020_16S_ps.cleanest.nd.RDS"))
+ps.less.nd <- readRDS(here("16S","CW_2020_16S_ps.less.nd.RDS"))
 ps.less.nd <- subset_samples(ps.less.nd,host_species!="astreoides")
-ps.rare.nd <- readRDS("CW_2020_16S_ps.rare.nd.RDS")
-ps.trim.nd <- readRDS("CW_2020_16S_ps.trim.nd.RDS")
-ps.trim.rare.nd <- readRDS("CW_2020_16S_ps.trim.rare.nd.RDS")
+#ps.rare.nd <- readRDS(here("16S","CW_2020_16S_ps.rare.nd.RDS"))
+#ps.trim.nd <- readRDS(here("16S","CW_2020_16S_ps.trim.nd.RDS"))
+#ps.trim.rare.nd <- readRDS(here("16S","CW_2020_16S_ps.trim.rare.nd.RDS"))
 
 #adding in site_nice column
 ps.less.nd <- ps.less.nd %>% ps_mutate(site_nice =
@@ -130,7 +131,6 @@ ps.less.nd@sam_data$m_rb <- paste(ps.less.nd@sam_data$m_y,ps.less.nd@sam_data$re
 
 #View(data.frame(ps.less.nd@sam_data))
 #add environmental data here too! and then resave - only doing this once and then don't need it anymore
-head(sample_data(ps.trim.nd))
 
 #split by species for each:
 #do this for each type
@@ -147,11 +147,11 @@ ps.pp.rel <- transform_sample_counts(ps.cl.pp, function(x) x / sum(x))
 #ps.pa.rel <- transform_sample_counts(ps.cl.pa, function(x) x / sum(x))
 #ps.all.rel <- subset_samples(ps.all.rel,host_species!="astreoides")
 
-#JUST READ THESE IN BELOW IF ALREADY CREATED!
-seq.all.ps.less <- data.frame(otu_table(ps.less.nd))
-seq.ss.rel <- data.frame(otu_table(ps.ss.rel))
-seq.sr.rel <- data.frame(otu_table(ps.sr.rel))
-seq.pp.rel <- data.frame(otu_table(ps.pp.rel))
+#make as needed (take a while to make)
+# seq.all.ps.less <- data.frame(otu_table(ps.less.nd))
+# seq.ss.rel <- data.frame(otu_table(ps.ss.rel))
+# seq.sr.rel <- data.frame(otu_table(ps.sr.rel))
+# seq.pp.rel <- data.frame(otu_table(ps.pp.rel))
 #seq.pa.rel <- data.frame(otu_table(ps.pa.rel))
 
 #write.csv(seq.all.ps.rare, "seq.all.ps.rare.csv")
@@ -160,105 +160,91 @@ seq.pp.rel <- data.frame(otu_table(ps.pp.rel))
 #  mutate(ids=row.names(seq.all.ps.rare.t),
 #         .before=A1)
 #seq.all.ps.rare.t
-#write.table(seq.all.ps.rare.t, file="seq.all.ps.rare.t.txt", sep="\t", row.names = FALSE)
+#write.table(seq.all.ps.rare.t, file=here("16S","seq.all.ps.rare.t.txt", sep="\t", row.names = FALSE)
 #rownames(seq.all.ps.rare.t) <- NULL
 
-saveRDS(seq.all.ps.less, "seq.all.rel.ps.less.RDS")
-saveRDS(seq.ss.rel, "seq.ss.rel.ps.less.RDS")
-saveRDS(seq.sr.rel, "seq.sr.rel.ps.less.RDS")
-saveRDS(seq.pp.rel, "seq.pp.rel.ps.less.RDS")
-#saveRDS(seq.pa.rel, "seq.pa.rel.ps.less.RDS")
-
-#read in here
-seq.all.rel <- readRDS("seq.all.rel.ps.less.RDS")
-seq.ss.rel <- readRDS("seq.ss.rel.ps.less.RDS")
-seq.sr.rel <- readRDS("seq.sr.rel.ps.less.RDS")
-seq.pp.rel <- readRDS("seq.pp.rel.ps.less.RDS")
-#seq.pa.rel <- readRDS("seq.pa.rel.ps.;ess.RDS")
 
 #MP redoing things Aug 23rd 2023 to make them look good and maybe even the stats will be better?
 ##All
 #ordination plots
+#sample dataframe as needed
 samdf.all <- data.frame(sample_data(ps.all.rel))
-samdf.all$time_zone <- paste(samdf.all$reef_bay,samdf.all$m_y)
-row.names(samdf.trim) <- samdf.trim$id
-seq.all.rel <- seq.all.rel[,!colnames(seq.all.rel) %in% core.all.ids ]
-#remake phyloseq object - already relative
-ps.acc <- phyloseq(otu_table(seq.all.rel, taxa_are_rows=FALSE), 
-                   sample_data(samdf.trim), 
-                   tax_table(taxa2))
-ps.acc #27646 taxa accessory ps.cleanest, ps.trim 826 taxa
-all.ord <- plot_ordination(ps.all.rel,ordinate(ps.all.rel,"PCoA", "bray"),color="site_zone")+
-  stat_ellipse()+
-  theme_cowplot()
-all.ord
 
 #coral species
-spp.ord <- plot_ordination(ps.all.rel,ordinate(ps.all.rel,"PCoA", "bray"),color="host_species", shape = "m_y")+
-  stat_ellipse(linewidth=1)+
+spp.ord <- plot_ordination(ps.all.rel,ordinate(ps.all.rel,"PCoA", "bray"),color="host_species")+
+  stat_ellipse(linewidth=2)+
   theme_classic(base_size = 22)+
+  geom_point(size=5)+
   #ggtitle(substitute(paste(italic("Siderastrea siderea"))))+
   scale_color_manual("Coral Species", values = c("darkkhaki","darksalmon","indianred"), labels = c(substitute(paste(italic("Porites spp."))), substitute(paste(italic("S. radians"))),substitute(paste(italic("S. siderea")))))
 spp.ord
-ggsave(spp.ord, file="spp.ord.ps.less.pdf",w=10,h=8)
+ggsave(spp.ord, file=here("16S","spp.ord.ps.less.pdf"),w=10,h=8)
 
 #ssid
 ss.ord <- plot_ordination(ps.ss.rel,ordinate(ps.ss.rel,"PCoA", "bray"),color="site_zone")+
-  stat_ellipse(linewidth=1)+
+  stat_ellipse(linewidth=2)+
   theme_classic(base_size = 22)+
+  geom_point(size=5)+
   ggtitle(substitute(paste(italic("Siderastrea siderea"))))+
   scale_color_manual(name = "Site", values = c("coral3", "paleturquoise","lightsalmon1","deepskyblue4"),labels = c("Santa Martha Bay", "Santa Martha Reef", "Spaanse Water Bay", "Spaanse Water Reef"))
 ss.ord
-ggsave(ss.ord, file="ss.ord.ps.less.pdf",w=10,h=8)
+ggsave(ss.ord, file=here("16S","ss.ord.ps.less.pdf"),w=10,h=8)
 
 #ssid timepoint
-ss.ord <- plot_ordination(ps.ss.rel,ordinate(ps.ss.rel,"PCoA", "bray"),color="m_y")+
-  stat_ellipse(linewidth=1)+
+ss.time.ord <- plot_ordination(ps.ss.rel,ordinate(ps.ss.rel,"PCoA", "bray"),color="m_y")+
+  stat_ellipse(linewidth=2)+
   theme_classic(base_size = 22)+
+  geom_point(size=5)+
   ggtitle(substitute(paste(italic("Siderastrea siderea"))))+
   scale_color_manual(name = "Timepoint", values = c("goldenrod","cornflowerblue", "skyblue"),labels = c("March 2020", "November 2020", "November 2021"))
-ss.ord
-ggsave(ss.ord, file="ss.ord.time.ps.less.pdf",w=10,h=8)
+ss.time.ord
+ggsave(ss.time.ord, file=here("16S","ss.ord.time.ps.less.pdf"),w=10,h=8)
 
 #srad
 sr.ord <- plot_ordination(ps.sr.rel,ordinate(ps.sr.rel,"PCoA", "bray"),color="site_zone")+
-  stat_ellipse(linewidth=1)+
+  stat_ellipse(linewidth=2)+
   theme_classic(base_size = 22)+
+  geom_point(size=5)+
   ggtitle(substitute(paste(italic("Siderastrea radians"))))+
   scale_color_manual(name = "Site", values = c("coral3","lightsalmon1"),labels = c("Santa Martha Bay", "Spaanse Water Bay"))
 sr.ord
-ggsave(sr.ord, file="sr.ord.ps.less.pdf",w=10,h=8)
+ggsave(sr.ord, file=here("16S",here("16S","sr.ord.ps.less.pdf",w=10,h=8)
 
 #srad timepoint
-sr.ord <- plot_ordination(ps.sr.rel,ordinate(ps.sr.rel,"PCoA", "bray"),color="m_y")+
-  stat_ellipse(linewidth=1)+
+sr.time.ord <- plot_ordination(ps.sr.rel,ordinate(ps.sr.rel,"PCoA", "bray"),color="m_y")+
+  stat_ellipse(linewidth=2)+
   theme_classic(base_size = 22)+
+  geom_point(size=5)+
   ggtitle(substitute(paste(italic("Siderastrea radians"))))+
   scale_color_manual(name = "Timepoint", values = c("goldenrod","cornflowerblue", "skyblue"),labels = c("March 2020", "November 2020", "November 2021"))
-sr.ord
-ggsave(sr.ord, file="sr.ord.time.ps.less.pdf",w=10,h=8)
+sr.time.ord
+ggsave(sr.time.ord, file=here("16S","sr.ord.time.ps.less.pdf"),w=10,h=8)
 
 #ppor
 pp.ord <- plot_ordination(ps.pp.rel,ordinate(ps.pp.rel,"PCoA", "bray"),color="site_zone")+
   #stat_ellipse(aes(linetype=reef_bay),linewidth=1)+
-  stat_ellipse(linewidth=1)+
+  stat_ellipse(linewidth=2)+
   theme_classic(base_size = 22)+
-  ggtitle(substitute(paste(italic("Porites spp."))))+
+  geom_point(size=5)+
+  labs(title = expression(paste("Branching ", italic("Porites "), "sp.")))+
   scale_color_manual(name = "Site", values = c("coral3", "paleturquoise"),labels = c("Santa Martha Bay", "Santa Martha Reef"))
 pp.ord
-ggsave(pp.ord, file="pp.ord.ps.less.pdf",w=10,h=8)
+ggsave(pp.ord, file=here("16S","pp.ord.ps.less.pdf"),w=10,h=8)
 
 #ppor timepoint
-pp.ord <- plot_ordination(ps.pp.rel,ordinate(ps.pp.rel,"PCoA", "bray"),color="m_y")+
-  stat_ellipse(linewidth=1)+
+pp.time.ord <- plot_ordination(ps.pp.rel,ordinate(ps.pp.rel,"PCoA", "bray"),color="m_y")+
+  stat_ellipse(linewidth=2)+
   theme_classic(base_size = 22)+
-  ggtitle(substitute(paste(italic("Porites sp."))))+
+  geom_point(size=5)+
+  labs(title = expression(paste("Branching ", italic("Porites "), "sp.")))+
   scale_color_manual(name = "Timepoint", values = c("cornflowerblue", "skyblue"),labels = c("November 2020", "November 2021"))
-pp.ord
-ggsave(pp.ord, file="pp.ord.time.ps.less.pdf",w=10,h=8)
+pp.time.ord
+ggsave(pp.time.ord, file=here("16S","pp.ord.time.ps.less.pdf"),w=10,h=8)
 
 pcoa.all <- ggarrange(ss.ord,sr.ord,pp.ord,nrow=1,ncol=3,legend="right",common.legend = TRUE, labels = c("A","B","C"), font.label = list(size = 30))
-ggsave(pcoa.all, file="pcoa.all.png",width=18,height=5)
+pcoa.time <- ggarrange(ss.time.ord,sr.time.ord,pp.time.ord,nrow=1,ncol=3,legend="right",common.legend = TRUE, labels = c("D","E","F"), font.label = list(size = 30))
+pcoa.together <- ggarrange(pcoa.all, pcoa.time, nrow=2,ncol=1)
+ggsave(pcoa.together, file=here("16S","pcoa.site.time.all.pdf"),width=20,height=15)
 
 #now stats for above
 #ALL
@@ -332,7 +318,7 @@ bar.core.rel.pp <- plot_bar(ps.pp.rel.z, fill="Genus")+
   #scale_fill_manual(values=c("#FFD92F","#1F78B4","#FC8D62","#CAB2D6"))+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 bar.core.rel.pp
-ggsave(bar.core.rel.pp, file="core.bar.ps.trim.pp.pdf",w=6,h=8)
+ggsave(bar.core.rel.pp, file=here("16S",here("16S","core.bar.ps.trim.pp.pdf",w=6,h=8)
 
 #siderastrea siderea
 ps_phy_glom_ss <- tax_glom(ps.ss.rel, "Phylum")
@@ -350,7 +336,7 @@ gg.bar.ss <- plot_bar(ps.phy.rel.sz,fill="Phylum")+
   ggtitle(substitute(paste(italic("Siderastrea siderea"))))
 #gg.bar.ss = gg.bar.ss + theme(axis.text.x=element_blank(),axis.ticks.x = element_blank(),axis.title.x = element_blank()) #for some reason this won't just add to the original plot
 gg.bar.ss
-ggsave(gg.bar.ss,file="bac.phy.barplot.ss.site.pdf",h=10,w=35)
+ggsave(gg.bar.ss,file=here("16S",here("16S","bac.phy.barplot.ss.site.pdf",h=10,w=35)
 #full plot - to put in supplementary, with all data across sites and time
 gg.bar.ss <- plot_bar(ps_phy_glom_ss,"number",fill="Phylum")+
   geom_bar(stat="identity")+
@@ -361,7 +347,7 @@ gg.bar.ss <- plot_bar(ps_phy_glom_ss,"number",fill="Phylum")+
   ylab("Relative Abundance")
 gg.bar.ss
 #each number corresponds to specific sample here
-ggsave(gg.bar.ss,file="bac.phy.barplot.ss.site.season.sampleid.pdf",h=15,w=30)    
+ggsave(gg.bar.ss,file=here("16S",here("16S","bac.phy.barplot.ss.site.season.sampleid.pdf",h=15,w=30)    
 
 #siderastrea radians
 ps_phy_glom_sr <- tax_glom(ps.sr.rel, "Phylum")
@@ -374,7 +360,7 @@ ps_fam_glom_sr <- tax_glom(ps.sr.rel, "Family")
 #   ylab("Relative Abundance")
 # gg.bar.sr = gg.bar.sr + theme(axis.text.x=element_blank(),axis.ticks.x = element_blank(),axis.title.x = element_blank()) #for some reason this won't just add to the original plot
 # gg.bar.sr
-# ggsave(gg.bar.sr,file="bac.phy.barplot.sr.site.pdf",h=5,w=15)
+# ggsave(gg.bar.sr,file=here("16S",here("16S","bac.phy.barplot.sr.site.pdf",h=5,w=15)
 ps_phy_glom_sr <- tax_glom(ps.sr.rel, "Phylum")
 ps_fam_glom_sr <- tax_glom(ps.sr.rel, "Family")
 ps.phy.sz <- merge_samples(ps_phy_glom_sr, "site_zone")
@@ -390,7 +376,7 @@ gg.bar.sr <- plot_bar(ps.phy.rel.sz,fill="Phylum")+
   ggtitle(substitute(paste(italic("Siderastrea radians"))))
 #gg.bar.sr = gg.bar.sr + theme(axis.text.x=element_blank(),axis.ticks.x = element_blank(),axis.title.x = element_blank()) #for some reason this won't just add to the original plot
 gg.bar.sr
-ggsave(gg.bar.sr,file="bac.phy.barplot.sr.site.pdf",h=10,w=30)
+ggsave(gg.bar.sr,file=here("16S",here("16S","bac.phy.barplot.sr.site.pdf",h=10,w=30)
 
 #full plot - to put in supplementary, with all data across sites and time
 gg.bar.sr <- plot_bar(ps_phy_glom_sr,"number",fill="Phylum")+
@@ -402,7 +388,7 @@ gg.bar.sr <- plot_bar(ps_phy_glom_sr,"number",fill="Phylum")+
   ylab("Relative Abundance")
 gg.bar.sr
 #each number corresponds to specific sample here, removed duplicate of D6 = sample ID 91 Nov 2020 SWB
-ggsave(gg.bar.sr,file="bac.phy.barplot.sr.site.season.sampleid.pdf",h=15,w=15)    
+ggsave(gg.bar.sr,file=here("16S",here("16S","bac.phy.barplot.sr.site.season.sampleid.pdf",h=15,w=15)    
 
 #porites porites
 ps_phy_glom_pp <- tax_glom(ps.pp.rel, "Phylum")
@@ -415,7 +401,7 @@ ps_fam_glom_pp <- tax_glom(ps.pp.rel, "Family")
 #   ylab("Relative Abundance")
 # gg.bar.pp = gg.bar.pp + theme(axis.text.x=element_blank(),axis.ticks.x = element_blank(),axis.title.x = element_blank()) #for some reason this won't just add to the original plot
 # gg.bar.pp
-# ggsave(gg.bar.pp,file="bac.phy.barplot.pp.site.pdf",h=5,w=15)
+# ggsave(gg.bar.pp,file=here("16S",here("16S","bac.phy.barplot.pp.site.pdf",h=5,w=15)
 ps_phy_glom_pp <- tax_glom(ps.pp.rel, "Phylum")
 #ps_fam_glom_pp <- tax_glom(ps.pp.rel, "Family")
 ps.phy.sz <- merge_samples(ps_phy_glom_pp, "site_zone")
@@ -431,11 +417,11 @@ gg.bar.pp <- plot_bar(ps.phy.rel.sz,fill="Phylum")+
   ggtitle(substitute(paste(italic("Porites porites"))))
 #gg.bar.pp = gg.bar.pp + theme(axis.text.x=element_blank(),axis.ticks.x = element_blank(),axis.title.x = element_blank()) #for some reason this won't just add to the original plot
 gg.bar.pp
-ggsave(gg.bar.pp,file="bac.phy.barplot.pp.site.pdf",h=10,w=27)
+ggsave(gg.bar.pp,file=here("16S","bac.phy.barplot.pp.site.pdf",h=10,w=27)
 
 twotogether <- ggarrange(gg.bar.sr,gg.bar.pp,nrow = 1, legend = "none", labels = c("B","C"),font.label = list(size = 50))
 composition_all_phylum_ps.less <- ggarrange(gg.bar.ss,twotogether,nrow = 1, common.legend = TRUE, legend = "bottom",labels = c("A"), font.label = list(size = 50))
-ggsave(composition_all_phylum_ps.less, file="composition_all_phylum_ps.less.pdf",width=30,height=15)
+ggsave(composition_all_phylum_ps.less, file=here("16S","composition_all_phylum_ps.less.pdf",width=30,height=15)
 
 #full plot - to put in supplementary, with all data acropp sites and time
 gg.bar.pp <- plot_bar(ps_phy_glom_pp,"number",fill="Phylum")+
@@ -447,7 +433,7 @@ gg.bar.pp <- plot_bar(ps_phy_glom_pp,"number",fill="Phylum")+
   ylab("Relative Abundance")
 gg.bar.pp
 #each number corresponds to specific sample here #removed duplicates same as bacterial dataset (Ns)
-ggsave(gg.bar.pp,file="bac.phy.barplot.pp.site.season.sampleid.pdf",h=15,w=15)    
+ggsave(gg.bar.pp,file=here("16S","bac.phy.barplot.pp.site.season.sampleid.pdf",h=15,w=15)    
 
 gg.bar.pp <- plot_bar(ps.cl.pp,"number",fill="Phylum")+
   geom_bar(stat="identity")+
@@ -561,15 +547,15 @@ ggsave(ms_bar_plot_pp_final, file = "microshades_bar_pp.ps.less.png",h=5,w=20)
 #putting plots together
 bac_pp_sr_plot <- ggarrange(ms_bar_plot_sr_final,ms_bar_plot_pp_final, nrow=2, ncol = 1, legend = "none", labels = c("B","C"),font.label = list(size = 50))
 bac_all_plot <- ggarrange(ms_bar_plot_ss_final,bac_pp_sr_plot, nrow=1, ncol = 2, legend = "right", common.legend = TRUE, labels = c("A"),font.label = list(size = 50))
-ggsave(bac_all_plot, file="microshades_all_bar.ps.less.pdf",width=30,height=12)
+ggsave(bac_all_plot, file=here("16S","microshades_all_bar.ps.less.pdf",width=30,height=12)
 
 #putting time plots together
 bac_all_time_plot <- ggarrange(ms_bar_plot_ss_final,ms_bar_plot_sr_final,ms_bar_plot_pp_final, nrow=3, ncol = 1, legend = "none", common.legend = TRUE, labels = c("A","B","C"),font.label = list(size = 50))
-ggsave(bac_all_time_plot, file="microshades_all_bar_time.ps.less.pdf",width=15,height=20)
+ggsave(bac_all_time_plot, file=here("16S","microshades_all_bar_time.ps.less.pdf",width=15,height=20)
 
 #just ss and pp for emes poster april 2nd 2024
 ms_ss_pp <- ggarrange(ms_bar_plot_ss_final,ms_bar_plot_pp_final,nrow = 2, ncol=1, heights= c(2,1), common.legend = TRUE, legend = "right", labels = c("A","B"),font.label = list(size = 50))
-ggsave(ms_ss_pp, file="microshades_ss_pp_bar_ps.less.png",width=20,height=15)
+ggsave(ms_ss_pp, file=here("16S","microshades_ss_pp_bar_ps.less.png",width=20,height=15)
 
 ## All, by Phylum
 #make category of all less than 10%
@@ -597,7 +583,7 @@ bar.all.rel.all <- plot_bar(ps.rel.phy.all.s, fill="Phylum")+
   #scale_fill_manual(values=c("#9ECAE1","#E78AC3","#FFD92F","#8DA0CB","#FC8D62","#CAB2D6"))+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 bar.all.rel.all
-ggsave(bar.all.rel.all, file="all.bar.phylum.ps.trim.all.site.time.pdf",h=6,w=10)
+ggsave(bar.all.rel.all, file=here("16S","all.bar.phylum.ps.trim.all.site.time.pdf",h=6,w=10)
 
 #ss by phylum
 ps_phy_glom_ss <- tax_glom(ps.cl.ss, "Phylum")
@@ -611,7 +597,7 @@ bar.all.rel.ss <- plot_bar(ps.rel.phy.ss.s, fill="Phylum")+
   #scale_fill_manual(values=c("#9ECAE1","#E78AC3","#FFD92F","#8DA0CB","#FC8D62","#CAB2D6"))+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 bar.all.rel.ss
-ggsave(bar.all.rel.ss, file="all.bar.ps.trim.ss.phylum.site.time.pdf",w=10,h=6)
+ggsave(bar.all.rel.ss, file=here("16S","all.bar.ps.trim.ss.phylum.site.time.pdf",w=10,h=6)
 
 ##sr by phylum
 ps_phy_glom_sr <- tax_glom(ps.cl.sr, "Phylum")
@@ -625,7 +611,7 @@ bar.all.rel.sr <- plot_bar(ps.rel.phy.sr.s, fill="Phylum")+
   #scale_fill_manual(values=c("#9ECAE1","#E78AC3","#FFD92F","#8DA0CB","#FC8D62","#CAB2D6"))+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 bar.all.rel.sr
-ggsave(bar.all.rel.sr, file="all.bar.ps.trim.sr.phylum.site.time.pdf",w=10,h=8)
+ggsave(bar.all.rel.sr, file=here("16S","all.bar.ps.trim.sr.phylum.site.time.pdf",w=10,h=8)
 
 ##pp by phylum
 ps_phy_glom_pp <- tax_glom(ps.cl.pp, "Phylum")
@@ -639,7 +625,7 @@ bar.all.rel.pp <- plot_bar(ps.rel.phy.pp.s, fill="Phylum")+
   #scale_fill_manual(values=c("#9ECAE1","#E78AC3","#FFD92F","#8DA0CB","#FC8D62","#CAB2D6"))+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 bar.all.rel.pp
-ggsave(bar.all.rel.pp, file="all.bar.ps.trim.pp.phylum.site.time.pdf",w=10,h=8)
+ggsave(bar.all.rel.pp, file=here("16S","all.bar.ps.trim.pp.phylum.site.time.pdf",w=10,h=8)
 
 ps.sz <- merge_samples(ps.trim.nd, "site_zone")
 ps.rel.sz <- transform_sample_counts(ps.sz, function(x) x / sum(x))
@@ -657,7 +643,7 @@ gg.bar.all.phy <- ggplot(ps.all.tab,aes(x=site_zone,y=Abundance,fill=Phylum))+
   xlab('Reef zone')+
   facet_wrap(m_y~site_zone,scales = "free_x")
 gg.bar.all.phy
-#ggsave(gg.bar.all,file="bac.bar.all.pdf",height=4)
+#ggsave(gg.bar.all,file=here("16S","bac.bar.all.pdf",height=4)
 
 #heat map more of them they are maybe different than the ones before and the ones after
 BiocManager::install(ComplexHeatmap), update = FALSE)
@@ -690,7 +676,7 @@ ss.pca <- ps.cl.ss.pca  %>% # replace ps.cl.ss.pca with the object you saved abo
   stat_ellipse(aes(color=site_zone)) + # sample.type = the sample_data variable I chose to calculate ellipses by
   coord_fixed(ratio = 1, clip = "off", xlim = c(-5, 5), ylim = c(-5, 5)) # I usually just plot a few times and manually change the xlim/ylim coordinates so that everything is nicely contained and my ellipses are within the axes
 ss.pca
-ggsave(ss.pca, file="ss.phylum.PCA.ps.trim.pdf", height=8, width=8)
+ggsave(ss.pca, file=here("16S","ss.phylum.PCA.ps.trim.pdf", height=8, width=8)
 
 #srad
 ps.cl.sr.pca <- ps.cl.sr %>% # replace es.hsp with your phyloseq object
@@ -711,7 +697,7 @@ sr.pca <- ps.cl.sr.pca  %>% # replace es_hsp_pca with the object you saved above
   stat_ellipse(aes(color=site_zone)) + # sample.type = the sample_data variable I chose to calculate ellipses by
   coord_fixed(ratio = 1, clip = "off", xlim = c(-4, 4), ylim = c(-4, 4)) # I usually just plot a few times and manually change the xlim/ylim coordinates so that everything is nicely contained and my ellipses are within the axes
 sr.pca
-ggsave(sr.pca, file="sr.phylum.PCA.ps.trim.pdf", height=8, width=8)
+ggsave(sr.pca, file=here("16S","sr.phylum.PCA.ps.trim.pdf", height=8, width=8)
 
 #ppor
 ps.cl.pp.pca <- ps.cl.pp %>% # replace es.hsp with your phyloseq object
@@ -733,7 +719,7 @@ pp.pca <- ps.cl.pp.pca  %>% # replace es_hsp_pca with the object you saved above
   stat_ellipse(aes(color=site_zone)) + # sample.type = the sample_data variable I chose to calculate ellipses by
   coord_fixed(ratio = 1, clip = "off", xlim = c(-7, 7), ylim = c(-6, 6)) # I usually just plot a few times and manually change the xlim/ylim coordinates so that everything is nicely contained and my ellipses are within the axes
 pp.pca
-ggsave(pp.pca, file="pp.phylum.PCA.ps.trim.pdf", height=8, width=8)
+ggsave(pp.pca, file=here("16S","pp.phylum.PCA.ps.trim.pdf", height=8, width=8)
 
 #past
 ps.cl.pa.pca <- ps.cl.pa %>% # replace es.hsp with your phyloseq object
@@ -756,7 +742,7 @@ pa.pca <- ps.cl.pa.pca  %>% # replace es_hsp_pca with the object you saved above
   coord_fixed(ratio = 1, clip = "off", xlim = c(-7, 8), ylim = c(-4, 5)) # I usually just plot a few times and manually change the xlim/ylim coordinates so that everything is nicely contained and my ellipses are within the axes
 pa.pca
 #dev.off()
-ggsave(pa.pca, file="pa.phylum.PCA.ps.cleanest.pdf", height=8, width=10)
+ggsave(pa.pca, file=here("16S","pa.phylum.PCA.ps.cleanest.pdf", height=8, width=10)
 
 #testing with adding taxa arrows with 0.05
 
@@ -782,7 +768,7 @@ ss.core.pca <- ps.core.ss.pca  %>% # replace es_hsp_pca with the object you save
   stat_ellipse(aes(color=site_zone)) + # sample.type = the sample_data variable I chose to calculate ellipses by
   coord_fixed(ratio = 1, clip = "off", xlim = c(-3, 3), ylim = c(-3, 3)) # I usually just plot a few times and manually change the xlim/ylim coordinates so that everything is nicely contained and my ellipses are within the axes
 ss.core.pca
-ggsave(ss.core.pca, file="ss.core.PCA.ps.trim.pdf", height=8, width=8)
+ggsave(ss.core.pca, file=here("16S","ss.core.PCA.ps.trim.pdf", height=8, width=8)
 
 #srad core
 ps.core.sr.pca <- ps.core.sr %>% # replace es.hsp with your phyloseq object
@@ -804,7 +790,7 @@ sr.core.pca <- ps.core.sr.pca  %>% # replace es_hsp_pca with the object you save
   stat_ellipse(aes(color=site_zone)) + # sample.type = the sample_data variable I chose to calculate ellipses by
   coord_fixed(ratio = 1, clip = "off", xlim = c(-3, 3), ylim = c(-3, 3)) # I usually just plot a few times and manually change the xlim/ylim coordinates so that everything is nicely contained and my ellipses are within the axes
 sr.core.pca
-ggsave(sr.core.pca, file="sr.core.PCA.ps.trim.pdf", height=8, width=8)
+ggsave(sr.core.pca, file=here("16S","sr.core.PCA.ps.trim.pdf", height=8, width=8)
 
 #ppor
 ps.core.pp.pca <- ps.core.pp %>% # replace es.hsp with your phyloseq object
@@ -826,7 +812,7 @@ pp.core.pca <- ps.core.pp.pca  %>% # replace es_hsp_pca with the object you save
   stat_ellipse(aes(color=site_zone)) + # sample.type = the sample_data variable I chose to calculate ellipses by
   coord_fixed(ratio = 1, clip = "off", xlim = c(-3, 3), ylim = c(-3, 3)) # I usually just plot a few times and manually change the xlim/ylim coordinates so that everything is nicely contained and my ellipses are within the axes
 pp.core.pca
-ggsave(pp.core.pca, file="pp.core.PCA.ps.trim.pdf", height=8, width=8)
+ggsave(pp.core.pca, file=here("16S","pp.core.PCA.ps.trim.pdf", height=8, width=8)
 
 #mean for environmental drivers! does this actually mean anything? I think an evntl correlation plot of some sort might be better!
 #ssid core
@@ -852,7 +838,7 @@ perm.mean.env.cl.ss <- bray.dists.ss.cl %>%
   coord_fixed(ratio = 1, clip = "off") +
   theme(legend.position = c(0.9, 0.1), legend.background = element_rect())
 perm.mean.env.cl.ss
-ggsave(perm.mean.env.cl.ss, file="CAP.mean.env.cl.ss.ps.trim.pdf")
+ggsave(perm.mean.env.cl.ss, file=here("16S","CAP.mean.env.cl.ss.ps.trim.pdf")
 
 #now look at range but like how can we do them together???
 perm2 <- bray.dists.ss.cl %>%
@@ -873,7 +859,7 @@ perm.range.env.cl.ss <- perm2 %>%
   coord_fixed(ratio = 1, clip = "off") +
   theme(legend.position = c(0.9, 0.1), legend.background = element_rect())
 perm.range.env.cl.ss
-ggsave(perm.range.env.cl.ss, file="CAP.range.env.cl.ss.ps.trim.pdf")
+ggsave(perm.range.env.cl.ss, file=here("16S","CAP.range.env.cl.ss.ps.trim.pdf")
 
 #srad
 ps.cl.sr <- ps.cl.sr %>% tax_fix(unknowns = c("Unknown Family"))
@@ -898,7 +884,7 @@ perm.mean.env.cl.sr <- perm2 %>%
   coord_fixed(ratio = 1, clip = "off") +
   theme(legend.position = c(0.9, 0.1), legend.background = element_rect())
 perm.mean.env.cl.sr
-ggsave(perm.mean.env.cl.sr, file="CAP.mean.env.cl.sr.ps.trim.pdf")
+ggsave(perm.mean.env.cl.sr, file=here("16S","CAP.mean.env.cl.sr.ps.trim.pdf")
 
 #now look at range
 perm2 <- bray.dists.sr.cl %>%
@@ -919,7 +905,7 @@ perm.range.env.cl.sr <- perm2 %>%
   coord_fixed(ratio = 1, clip = "off") +
   theme(legend.position = c(0.9, 0.1), legend.background = element_rect())
 perm.range.env.cl.sr
-ggsave(perm.range.env.cl.sr, file="CAP.range.env.cl.sr.ps.trim.pdf")
+ggsave(perm.range.env.cl.sr, file=here("16S","CAP.range.env.cl.sr.ps.trim.pdf")
 
 #ppor
 ps.cl.pp <- ps.cl.pp %>% tax_fix(unknowns = c("Unknown Family"))
@@ -944,7 +930,7 @@ perm.mean.env.cl.pp <- perm2 %>%
   coord_fixed(ratio = 1, clip = "off") +
   theme(legend.position = c(0.9, 0.1), legend.background = element_rect())
 perm.mean.env.cl.pp
-ggsave(perm.mean.env.cl.pp, file="CAP.mean.env.cl.pp.ps.trim.pdf")
+ggsave(perm.mean.env.cl.pp, file=here("16S","CAP.mean.env.cl.pp.ps.trim.pdf")
 
 #now look at range
 perm2 <- bray.dists.pp.cl %>%
@@ -965,7 +951,7 @@ perm.range.env.cl.pp <- perm2 %>%
   coord_fixed(ratio = 1, clip = "off") +
   theme(legend.position = c(0.9, 0.1), legend.background = element_rect())
 perm.range.env.cl.pp
-ggsave(perm.range.env.cl.pp, file="CAP.range.env.cl.pp.ps.trim.pdf")
+ggsave(perm.range.env.cl.pp, file=here("16S","CAP.range.env.cl.pp.ps.trim.pdf")
 
 # PCOA plots
 
@@ -983,7 +969,7 @@ all.ord.all
 #xlab("Axis 1 (42.6%)")+
 #ylab("Axis 2 (24.1%)")+
 #ggtitle("Rarefied")
-ggsave(all.ord.all, file="all.ord.all.ps.trim.pdf",w=8,h=8)
+ggsave(all.ord.all, file=here("16S","all.ord.all.ps.trim.pdf",w=8,h=8)
 
 #ssid
 ss.ord.all <- plot_ordination(ps.cl.ss,ordinate(ps.cl.ss,"PCoA", "bray"),color="m_y")+
@@ -992,7 +978,7 @@ ss.ord.all <- plot_ordination(ps.cl.ss,ordinate(ps.cl.ss,"PCoA", "bray"),color="
   theme_classic(base_size = 22)#+
   #scale_color_manual(values=c("#E78AC3","#8DA0CB","#FC8D62","#66C2A5"))
 ss.ord.all
-ggsave(ss.ord.all, file="ss.ord.all.ps.trim.pdf",w=8,h=8)
+ggsave(ss.ord.all, file=here("16S","ss.ord.all.ps.trim.pdf",w=8,h=8)
 
 #srad
 sr.ord.all <- plot_ordination(ps.cl.sr,ordinate(ps.cl.sr,"PCoA", "bray"),color="m_y")+
@@ -1001,7 +987,7 @@ sr.ord.all <- plot_ordination(ps.cl.sr,ordinate(ps.cl.sr,"PCoA", "bray"),color="
   theme_classic(base_size = 22)#+
   #scale_color_manual(values=c("#E78AC3","#FC8D62"))
 sr.ord.all
-ggsave(sr.ord.all, file="sr.ord.all.ps.trim.pdf",w=8,h=8)
+ggsave(sr.ord.all, file=here("16S","sr.ord.all.ps.trim.pdf",w=8,h=8)
 
 #ppor
 pp.ord.all <- plot_ordination(ps.cl.pp,ordinate(ps.cl.pp,"PCoA", "bray"),color="m_y")+
@@ -1010,7 +996,7 @@ pp.ord.all <- plot_ordination(ps.cl.pp,ordinate(ps.cl.pp,"PCoA", "bray"),color="
   theme_classic(base_size = 22)#+
   #scale_color_manual(values=c("#E78AC3","#8DA0CB"))
 pp.ord.all
-ggsave(pp.ord.all, file="pp.ord.all.ps.trim.pdf",w=8,h=8)
+ggsave(pp.ord.all, file=here("16S","pp.ord.all.ps.trim.pdf",w=8,h=8)
 
 #past
 pa.ord.all <- plot_ordination(ps.cl.pa,ordinate(ps.cl.pa,"PCoA", "bray"),color="site_zone")+
@@ -1019,7 +1005,7 @@ pa.ord.all <- plot_ordination(ps.cl.pa,ordinate(ps.cl.pa,"PCoA", "bray"),color="
   theme_classic(base_size = 22)+
   scale_color_manual(values=c("#FC8D62","#66C2A5"))
 pa.ord.all
-ggsave(pa.ord.all, file="pa.ord.all.ps.trim.pdf",w=8,h=8)
+ggsave(pa.ord.all, file=here("16S","pa.ord.all.ps.trim.pdf",w=8,h=8)
 ggarrange(ss.ord.all,sr.ord.all,pp.ord.all,nrow=1,common.legend=T,legend="right")
 #ggsave("pcoa.all.zone.pdf",width=11,height=3)
 
@@ -1238,7 +1224,7 @@ gg.ss.bar.s <- plot_bar(ps.ss.rel.z,x="m_y_s_z",y="Abundance", fill="Phylum")+
   xlab("Sample ID")+
   ylab("Relative Abundance")
 gg.ss.bar.s
-ggsave(gg.ss.bar.s,file="gg.ss.bar.97SSSWR.pdf",h=10,w=14) 
+ggsave(gg.ss.bar.s,file=here("16S","gg.ss.bar.97SSSWR.pdf",h=10,w=14) 
 
 
 ps_glom.ss <- tax_glom(ps.cl.ss, "Phylum")
@@ -1252,7 +1238,7 @@ gg.ss.bar.s <- plot_bar(ps.ss.rel.z, fill="Phylum")+
   xlab("Sample ID")+
   ylab("Relative Abundance")
 gg.ss.bar.s
-ggsave(gg.ss.bar.s,file="bar_phylum_ss_site_time_ps.trim.pdf",h=10,w=14) 
+ggsave(gg.ss.bar.s,file=here("16S","bar_phylum_ss_site_time_ps.trim.pdf",h=10,w=14) 
 
 
 # ANCOM
@@ -1325,7 +1311,7 @@ pp.10.heat
 
 pp.sr.heat <- ggarrange(sr.10.heat, pp.10.heat, nrow=1, ncol = 2, legend = "none", labels = c("B","C"),font.label = list(size = 40))
 heat.all.top.10.genus.ps.less <- ggarrange(ss.10.heat,pp.sr.heat, nrow=2, ncol = 1, legend = "right", common.legend = TRUE, labels = c("A"),font.label = list(size = 40))
-ggsave(heat.all.top.10.genus.ps.less, file="heatmap.all.top.10.genus.ps.less.png",width=20,height=10)
+ggsave(heat.all.top.10.genus.ps.less, file=here("16S","heatmap.all.top.10.genus.ps.less.png",width=20,height=10)
 
 #also looking at this at the phylum level too
 #siderea
@@ -1363,7 +1349,7 @@ pp.10.heat.phy
 #arrange plots together
 pp.sr.heat.phy <- ggarrange(sr.10.heat.phy, pp.10.heat.phy, nrow=1, ncol = 2, legend = "none", labels = c("B","C"),font.label = list(size = 40))
 heat.phy.all.top.10.phy.ps.less <- ggarrange(ss.10.heat.phy,pp.sr.heat.phy, nrow=2, ncol = 1, legend = "right", common.legend = TRUE, labels = c("A"),font.label = list(size = 40))
-ggsave(heat.phy.all.top.10.phy.ps.less, file="heatmap.all.top.10.phylum.ps.less.png",width=20,height=10)
+ggsave(heat.phy.all.top.10.phy.ps.less, file=here("16S","heatmap.all.top.10.phylum.ps.less.png",width=20,height=10)
 
 
 #not keeping top 20
@@ -1371,9 +1357,9 @@ ss.20.heat <- plot_heatmap(ps.cl.ss.20, sample.label="site_zone", method = "NMDS
              sample.order="site_zone", taxa.order = "Genus", low = "khaki",
              high = "royalblue1", na.value = "white", title = "Siderastrea Siderea Top 20 Genera (trim)")
 ss.20.heat
-ggsave(ss.10.heat, file="heat_genus_top10_ps.tr.ss.pdf",h=3,w=8)
+ggsave(ss.10.heat, file=here("16S","heat_genus_top10_ps.tr.ss.pdf",h=3,w=8)
 
-ggsave(ss.20.heat, file="heat_genus_top20_ps.tr.ss.pdf",h=3,w=8)
+ggsave(ss.20.heat, file=here("16S","heat_genus_top20_ps.tr.ss.pdf",h=3,w=8)
 
 #ssid
 ps.cl.ss.vibrio <- subset_taxa(ps.cl.ss, Family=="Vibrionaceae")
@@ -1511,7 +1497,7 @@ devtools::install_github("david-barnett/microViz")
 library("microViz")
 
 #all data from above:
-ps.trim.nd <- readRDS("CW_2020_16S_ps.trim.nd.RDS")
+ps.trim.nd <- readRDS(here("16S","CW_2020_16S_ps.trim.nd.RDS")
 ps.cl.ss <- subset_samples(ps.trim.nd,host_species=="siderea")
 
 #Separate by site
@@ -1579,7 +1565,7 @@ gg.bar.ss.cd <- plot_bar(ps_phy_glom_ss_cd,"sample_full",fill="Phylum")+
   ylab("Relative Abundance")
 gg.bar.ss.cd = gg.bar.ss.cd + theme(axis.text.x=element_blank(),axis.ticks.x = element_blank(),axis.title.x = element_blank()) #for some reason this won't just add to the original plot
 gg.bar.ss.cd
-ggsave(gg.bar.ss.cd,file="bac.phy.barplot.ss.cd.pdf",h=10,w=20)
+ggsave(gg.bar.ss.cd,file=here("16S","bac.phy.barplot.ss.cd.pdf",h=10,w=20)
 #full plot - to put in supplementary, with all data across sites and time
 gg.bar.ss <- plot_bar(ps_phy_glom_ss,"number",fill="Phylum")+
   geom_bar(stat="identity")+
@@ -1590,7 +1576,7 @@ gg.bar.ss <- plot_bar(ps_phy_glom_ss,"number",fill="Phylum")+
   ylab("Relative Abundance")
 gg.bar.ss
 #each number corresponds to specific sample here
-ggsave(gg.bar.ss,file="bac.phy.barplot.ss.site.season.sampleid.pdf",h=15,w=30)   
+ggsave(gg.bar.ss,file=here("16S","bac.phy.barplot.ss.site.season.sampleid.pdf",h=15,w=30)   
 
 #bars grouped by symbiont type
 ps.ss.cd <- merge_samples(ps_phy_glom_ss_cd, "major_clade")
@@ -1603,7 +1589,7 @@ bar.rel.cd.ss <- plot_bar(ps.ss.cd.rel, fill="Phylum")+
   #scale_fill_manual(values=c("#FDBF6F","#9ECAE1","#E78AC3","#B2DF8A","#FFD92F","#8DA0CB","#FC8D62","#66C2A5","#CAB2D6"))+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 bar.rel.cd.ss
-ggsave(bar.rel.cd.ss, file="bar.rel.cd.ss.pdf",w=10,h=8)
+ggsave(bar.rel.cd.ss, file=here("16S","bar.rel.cd.ss.pdf",w=10,h=8)
 
 #ord plots for SSID to look at beta diversity
 
@@ -1611,7 +1597,7 @@ ss.ord.all.cd <- plot_ordination(ps.cl.ss.cd,ordinate(ps.cl.ss.cd,"PCoA", "bray"
   stat_ellipse()+
   scale_color_brewer(palette="Set1")
 ss.ord.all.cd
-ggsave(ss.ord.all.cd, file="ss.ord.all.cd.ps.trim.pdf",w=10,h=8)
+ggsave(ss.ord.all.cd, file=here("16S","ss.ord.all.cd.ps.trim.pdf",w=10,h=8)
 #with stats - can only look at differences between C and D, not combined C and D and site bc too few
 #but here there also seems to be something special about the reef sids hosting D!!! but still it is only 4 samples
 
@@ -1653,7 +1639,7 @@ ss.cd.pca <- ps.cd.ss.pca  %>% # replace es_hsp_pca with the object you saved ab
   stat_ellipse(aes(color=major_clade)) + # sample.type = the sample_data variable I chose to calculate ellipses by
   coord_fixed(ratio = 1, clip = "off", xlim = c(-5, 5), ylim = c(-5, 5)) # I usually just plot a few times and manually change the xlim/ylim coordinates so that everything is nicely contained and my ellipses are within the axes
 ss.cd.pca
-ggsave(ss.cd.pca, file="ss.phylum.PCA.cd.ps.trim.pdf", height=8, width=8)
+ggsave(ss.cd.pca, file=here("16S","ss.phylum.PCA.cd.ps.trim.pdf", height=8, width=8)
 
 #differential abundance using ALDEx2
 #paper that looks at all the methods and says ancom2 and aldex2 are the best and aldex2 works better for me so I'm using it YEAH
@@ -1749,10 +1735,10 @@ saveRDS(aldex2_ss, "CW_2020_16S_aldex2_ss.RDS")
 saveRDS(aldex2_sr, "CW_2020_16S_aldex2_sr.RDS")
 saveRDS(aldex2_ss_bay_reef, "CW_2020_16S_aldex2_ss_bay_reef.RDS")
 
-aldex2_ss <- readRDS("CW_2020_16S_aldex2_ss.RDS")
-aldex2_sr <- readRDS("CW_2020_16S_aldex2_sr.RDS")
-aldex2_ss_bay_reef <- readRDS("CW_2020_16S_aldex2_ss_bay_reef.RDS")
-aldex2_ss_time <- readRDS("CW_2020_16S_aldex2_ss_time.RDS")
+aldex2_ss <- readRDS(here("16S","CW_2020_16S_aldex2_ss.RDS")
+aldex2_sr <- readRDS(here("16S","CW_2020_16S_aldex2_sr.RDS")
+aldex2_ss_bay_reef <- readRDS(here("16S","CW_2020_16S_aldex2_ss_bay_reef.RDS")
+aldex2_ss_time <- readRDS(here("16S","CW_2020_16S_aldex2_ss_time.RDS")
 
 #abundance plots
 abundance_aldex2_ss <- plot_abundance(aldex2_ss, markers = NULL, group="site_zone") + 
@@ -1806,7 +1792,7 @@ heat_aldex2_ss_bay_reef
 heat_aldex2_sr <- microbiomeMarker::plot_heatmap(aldex2_sr,transform="identity",group="site_zone")
 heat_aldex2_sr
 #also won't save so had to just export
-ggsave(heat_aldex2_sr, file="heatmap_diff_abundance_site_sr.ps.less.png",h=4,w=8)
+ggsave(heat_aldex2_sr, file=here("16S","heatmap_diff_abundance_site_sr.ps.less.png",h=4,w=8)
 
 #running ancombc for ssid
 run_ancombc(ps.cl.ss, group="site_zone", confounders = character(0), contrast = NULL,
@@ -1889,7 +1875,7 @@ ps.no.rare <- phyloseq(otu_table(no.rare.seq, taxa_are_rows=FALSE),
 # #do this with each dataset to see differences
 # core.all.ids <- row.names(core.all.tax)
 # core.all.tax$id <-row.names(core.all.tax)
-# seq.all.rel <- readRDS("seq.all.rel.ps.trim.RDS")
+# seq.all.rel <- readRDS(here("16S","seq.all.rel.ps.trim.RDS")
 # all.tax <- data.frame(tax_table(ps.all.rel))
 # all.tax$id <- rownames(all.tax)
 # seq.all.core <- seq.all.rel %>% select(all_of(core.all.ids))
@@ -1919,7 +1905,7 @@ ps.no.rare <- phyloseq(otu_table(no.rare.seq, taxa_are_rows=FALSE),
 # core.ss.ids <- row.names(core.ss.tax)
 # core.ss.tax$id <-row.names(core.ss.tax)
 # ps.ss.rel <- transform_sample_counts(ps.cl.ss, function(x) x / sum(x))
-# seq.ss.rel <- readRDS("seq.ss.rel.ps.trim.RDS")
+# seq.ss.rel <- readRDS(here("16S","seq.ss.rel.ps.trim.RDS")
 # ss.tax <- data.frame(tax_table(ps.ss.rel))
 # ss.tax$id <- rownames(ss.tax)
 # seq.ss.core <- seq.ss.rel %>% select(all_of(core.ss.ids))
@@ -1949,7 +1935,7 @@ ps.no.rare <- phyloseq(otu_table(no.rare.seq, taxa_are_rows=FALSE),
 # core.sr.ids <- row.names(core.sr.tax)
 # core.sr.tax$id <-row.names(core.sr.tax)
 # ps.sr.rel <- transform_sample_counts(ps.cl.sr, function(x) x / sum(x))
-# seq.sr.rel <- readRDS("seq.sr.rel.ps.trim.RDS")
+# seq.sr.rel <- readRDS(here("16S","seq.sr.rel.ps.trim.RDS")
 # sr.tax <- data.frame(tax_table(ps.sr.rel))
 # sr.tax$id <- rownames(sr.tax)
 # seq.sr.core <- seq.sr.rel %>% select(all_of(core.sr.ids))
@@ -1979,7 +1965,7 @@ ps.no.rare <- phyloseq(otu_table(no.rare.seq, taxa_are_rows=FALSE),
 # core.pp.ids <- row.names(core.pp.tax)
 # core.pp.tax$id <-row.names(core.pp.tax)
 # ps.pp.rel <- transform_sample_counts(ps.cl.pp, function(x) x / sum(x))
-# seq.pp.rel <- readRDS("seq.pp.rel.ps.trim.RDS")
+# seq.pp.rel <- readRDS(here("16S","seq.pp.rel.ps.trim.RDS")
 # pp.tax <- data.frame(tax_table(ps.pp.rel))
 # pp.tax$id <- rownames(pp.tax)
 # seq.pp.core <- seq.pp.rel %>% select(all_of(core.pp.ids))
@@ -2008,7 +1994,7 @@ ps.no.rare <- phyloseq(otu_table(no.rare.seq, taxa_are_rows=FALSE),
 # #past
 # core.pa.ids <- row.names(core.pa.tax)
 # core.pa.tax$id <-row.names(core.pa.tax)
-# seq.pa.rel <- readRDS("seq.pa.rel.ps.trim.RDS")
+# seq.pa.rel <- readRDS(here("16S","seq.pa.rel.ps.trim.RDS")
 # pa.tax <- data.frame(tax_table(ps.pa.rel))
 # pa.tax$id <- rownames(pa.tax)
 # seq.pa.core <- seq.pa.rel %>% select(all_of(core.pa.ids))
@@ -2073,7 +2059,7 @@ ps.no.rare <- phyloseq(otu_table(no.rare.seq, taxa_are_rows=FALSE),
 #   #scale_fill_manual(values=c("#9ECAE1","#E78AC3","#FFD92F","#8DA0CB","#FC8D62","#CAB2D6"))+
 #   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 # bar.core.rel.all
-# ggsave(bar.core.rel.all, file="core.bar.ps.trim.all.pdf",w=8,h=8)
+# ggsave(bar.core.rel.all, file=here("16S","core.bar.ps.trim.all.pdf",w=8,h=8)
 # 
 # #ssid
 # ps_glom.ss <- tax_glom(ps.core.ss, "Genus")
@@ -2087,7 +2073,7 @@ ps.no.rare <- phyloseq(otu_table(no.rare.seq, taxa_are_rows=FALSE),
 #   scale_fill_manual(values=c("#FDBF6F","#9ECAE1","#E78AC3","#B2DF8A","#FFD92F","#8DA0CB","#FC8D62","#66C2A5","#CAB2D6"))+
 #   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 # bar.core.rel.ss
-# ggsave(bar.core.rel.ss, file="core.bar.ps.trim.ss.site.pdf",w=10,h=8)
+# ggsave(bar.core.rel.ss, file=here("16S","core.bar.ps.trim.ss.site.pdf",w=10,h=8)
 # #srad
 # ps_glom.sr <- tax_glom(ps.core.sr, "Species")
 # ps.sr.z <- merge_samples(ps_glom.sr, "m_y_s_z")
@@ -2100,7 +2086,7 @@ ps.no.rare <- phyloseq(otu_table(no.rare.seq, taxa_are_rows=FALSE),
 #   #scale_fill_manual(values=c("#FDBF6F","#9ECAE1","#33A02C","#E78AC3","#8DA0CB","#FC8D62","#FFFF99","#66C2A5","#CAB2D6"))+
 #   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 # bar.core.rel.sr
-# ggsave(bar.core.rel.sr, file="core.bar.ps.trim.sr.pdf",w=6,h=8)
+# ggsave(bar.core.rel.sr, file=here("16S","core.bar.ps.trim.sr.pdf",w=6,h=8)
 # #ppor
 # ps_glom.pp <- tax_glom(ps.core.pp, "Genus")
 # ps.pp.z <- merge_samples(ps_glom.pp, "m_y_s_z")
@@ -2113,7 +2099,7 @@ ps.no.rare <- phyloseq(otu_table(no.rare.seq, taxa_are_rows=FALSE),
 #   #scale_fill_manual(values=c("#FFD92F","#1F78B4","#FC8D62","#CAB2D6"))+
 #   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 # bar.core.rel.pp
-# ggsave(bar.core.rel.pp, file="core.bar.ps.trim.pp.pdf",w=6,h=8)
+# ggsave(bar.core.rel.pp, file=here("16S","core.bar.ps.trim.pp.pdf",w=6,h=8)
 # #past
 # ps_glom.pa <- tax_glom(ps.core.pa, "Genus")
 # ps.pa.z <- merge_samples(ps_glom.pa, "site_zone")
@@ -2124,7 +2110,7 @@ ps.no.rare <- phyloseq(otu_table(no.rare.seq, taxa_are_rows=FALSE),
 #   #scale_fill_manual(values=c("#6A3D9A"))+
 #   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 # bar.core.rel.pa
-# ggsave(bar.core.rel.pa, file="core.bar.ps.trim.pa.pdf",w=4,h=8)
+# ggsave(bar.core.rel.pa, file=here("16S","core.bar.ps.trim.pa.pdf",w=4,h=8)
 # 
 # #now ordination plots - they are all looking so crazy and yet somehow are not significant
 # #ssid ord core
@@ -2135,7 +2121,7 @@ ps.no.rare <- phyloseq(otu_table(no.rare.seq, taxa_are_rows=FALSE),
 # ss.ord.core
 # #looks like a hot mess!!
 # #grouping by time point and site also doesn't show any patterns/clustering
-# ggsave(ss.ord.core, file="ss.ord.core.ps.trim.pdf",w=8,h=8)
+# ggsave(ss.ord.core, file=here("16S","ss.ord.core.ps.trim.pdf",w=8,h=8)
 # #srad ord core
 # sr.ord.core <- plot_ordination(ps.core.sr,ordinate(ps.core.sr,"PCoA", "bray"),color="site_zone")+
 #   stat_ellipse()+
@@ -2143,7 +2129,7 @@ ps.no.rare <- phyloseq(otu_table(no.rare.seq, taxa_are_rows=FALSE),
 #   scale_color_manual(name="Site",values=c("#E78AC3","#FC8D62"))
 # sr.ord.core
 # #no patterns, grouping by timepoint shows that march 2020 SMB clusters tightly
-# ggsave(sr.ord.core, file="sr.ord.core.ps.trim.pdf",w=8,h=8)
+# ggsave(sr.ord.core, file=here("16S","sr.ord.core.ps.trim.pdf",w=8,h=8)
 # #ppor ord core
 # pp.ord.core <- plot_ordination(ps.core.pp,ordinate(ps.core.pp,"PCoA", "bray"),color="site_zone")+
 #   stat_ellipse()+
@@ -2151,7 +2137,7 @@ ps.no.rare <- phyloseq(otu_table(no.rare.seq, taxa_are_rows=FALSE),
 #   scale_color_manual(name="Site",values=c("#E78AC3","#8DA0CB"))
 # pp.ord.core
 # #no patterns, grouping by timepoint shows that Nov 2021 SMR clusters slightly more
-# ggsave(pp.ord.core, file="pp.ord.core.ps.trim.pdf",w=8,h=8)
+# ggsave(pp.ord.core, file=here("16S","pp.ord.core.ps.trim.pdf",w=8,h=8)
 # #past ord core
 # pa.ord.core <- plot_ordination(ps.core.pa,ordinate(ps.core.pa,"PCoA", "bray"),color="site_zone")+
 #   stat_ellipse()+
@@ -2159,7 +2145,7 @@ ps.no.rare <- phyloseq(otu_table(no.rare.seq, taxa_are_rows=FALSE),
 #   scale_color_manual(name="Site",values=c("#FC8D62","#66C2A5"))
 # pa.ord.core
 # #yeah clusters for SWB but only 6 points not really relevant or interesting
-# ggsave(pa.ord.core, file="pa.ord.core.ps.trim.pdf",w=8,h=8)
+# ggsave(pa.ord.core, file=here("16S","pa.ord.core.ps.trim.pdf",w=8,h=8)
 # 
 # 
 # ### Core stats

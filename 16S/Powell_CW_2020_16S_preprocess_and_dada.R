@@ -645,14 +645,10 @@ total.df %>%
   print(20)
 subset(total, total <1000)
 #samples range from 89 to 135,232
-#YEESH
-#not sure what to do about this - how can I even compare samples between?
 
-subset(total, total <1000) #7 samples need to be removed (H11,H12,H5,H9,H10,H8,H2)
+subset(total, total <1000)
 
 #get rid of all samples with less than 1000 seqs
-#6 samples
-# identified by MCMC.OTU below as being too low 
 
 row.names.remove <- c("K4","K9","M3","M5","M6","M9","N10","N4","N8")
 seqtab.less <- seqtab.cleanest[!(row.names(seqtab.cleanest) %in% row.names.remove),]
@@ -664,10 +660,19 @@ ps.less <- phyloseq(otu_table(seqtab.less, taxa_are_rows=FALSE),
                     sample_data(samdf.less), 
                     tax_table(taxa2))
 ###saving
-#setwd("~/oculina/data")
 write.csv(seqtab.less, file="CW_2020_16S_seqtab.less.csv")
 write.csv(samdf.less, file="CW_2020_16S_samdf.less.csv")
 saveRDS(ps.less,file="CW_2020_16S_ps.less.RDS")
+
+#look at rarefication curves of ps.less
+ps.less.nd <- readRDS(here("16S","CW_2020_16S_ps.less.nd.RDS"))
+seqtab.less <- data.frame(ps.less.nd@otu_table) #27653 asvs
+
+rarecurve(seqtab.less,step=1000,label=FALSE) 
+
+#look at rarefication curves of ps.rare
+ps.rare.nd <- readRDS(here("16S","CW_2020_16S_ps.rare.nd.RDS"))
+seqtab.rare <- data.frame(ps.rare.nd@otu_table) #23759 asvs
 
 #for rarefied data, removing values up to 10,000
 subset(total, total <10000)
@@ -683,7 +688,7 @@ rarecurve(seqtab.rare,step=1000,label=FALSE)
 ps.rare <- phyloseq(otu_table(seqtab.rare, taxa_are_rows=FALSE), 
                     sample_data(samdf.rare), 
                     tax_table(taxa2))
-ps.rare #3433 taxa, 64 samples
+ps.rare
 
 #removing missing taxa - lost after rarefying
 ps.rare <- prune_taxa(taxa_sums(ps.rare) > 0, ps.rare)
@@ -716,7 +721,10 @@ seq.formcmc$sample <- samples
 
 #change second columns value to equal total variables
 dim(seq.formcmc) #135 by 27655
-seq.trim.allinfo <- purgeOutliers(seq.formcmc,count.columns=3:27655,sampleZcut=-2.5,otu.cut=0.0001,zero.cut=0.02)
+seq.trim.allinfo <- purgeOutliers(seq.formcmc,count.columns=3:27655,
+                                  sampleZcut=-2.5,
+                                  otu.cut=0.0001,
+                                  zero.cut=0.02)
 #1 sample with counts below z-score
 #1006 ASVs pass filters using seqtab.less
 

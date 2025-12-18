@@ -39,14 +39,14 @@ library("glmmTMB")
 #ps.cleanest.nd = subset_samples(ps.cleanest, id!="N10" & id!="N1" & id!="N2" & id!="N3" & id!="N4" & id!="N5" & id!="N6" & id!="N7" & id!="N8" & id!="N9")
 #samdf.cleanest.nd <- data.frame(sample_data(ps.cleanest.nd))
 
-ps.less <- readRDS("CW_2020_16S_ps.less.RDS")
+ps.less.nd <- readRDS(here("16S","CW_2020_16S_ps.less.nd.RDS"))
 ps.less #27653 taxa and 135 samples, samples with counts <1,000 removed (9 samples removed)
 #in addition, removing the astreoides samples
 ps.less.nd = subset_samples(ps.less, id!="N10" & id!="N11" & id!="N2" & id!="N3" & id!="N4" & id!="N5" & id!="N6" & id!="N7" & id!="N8" & id!="N9")
 ps.less.nd.no.astreoides = subset_samples(ps.less.nd, id!="J9" & id!="J10" & id!="J11" & id!="J12" & id!="K1" & id!="K2")
 samdf.less.nd <- data.frame(sample_data(ps.less.nd.no.astreoides))
 
-#ps.rare <- readRDS("CW_2020_16S_ps.rare.RDS")
+ps.rare <- readRDS(here("16S","CW_2020_16S_ps.rare.nd.RDS"))
 #ps.rare #23759 taxa and 98 samples, rarefied to 10,000 (46 samples removed)
 #ps.rare.nd = subset_samples(ps.rare, id!="N10" & id!="N11" & id!="N2" & id!="N3" & id!="N4" & id!="N5" & id!="N6" & id!="N7" & id!="N8" & id!="N9")
 #samdf.rare.nd <- data.frame(sample_data(ps.rare.nd))
