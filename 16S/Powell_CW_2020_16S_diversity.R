@@ -1,9 +1,7 @@
 #Maya Powell
 #Final updates October 2024 FINISHING GRAPHS AND STATS
 #16S DIVERSITY analysis
-#Based on scripts from Anastasia Dulskiy and Nicola Kreifall and Hannah Aichelman
-#With help from Rachael Best on glms!
-setwd("~/Documents/Castillo Lab/CW_2020/CW_2020_16S")
+#Based on scripts from Anastasia Dulskiy and Nicola Kreifall and Hannah Aichelman and Rachael Best
 # Setup
 
 ## Packages
@@ -18,17 +16,15 @@ library(vegan) #vegan 2.6-4
 #BiocManager::install("dada2")
 library(dada2)
 library(RColorBrewer)
-library(wesanderson)
 library(dplyr)
 #install.packages("lme4")
 library("lme4")
 #install.packages("glmmTMB")
 library("glmmTMB")
+library(here)
 
-##COMING BACK TO THIS ANALYSIS???
-##SEE LINE 83 TO READ IN DIVERSITY DATAFRAME!!!!!! WOOOHOOO!!
-
-## Read in data
+#####INITIAL DATA PROCESSING####
+#only needed once or to redo as needed
 #for this analysis - should be done on raw, untrimmed dataset
 #therefore, using ps.less! (raw, untrimmed data with just 9 samples with less than 1000 read counts removed)
 
@@ -39,50 +35,46 @@ library("glmmTMB")
 #ps.cleanest.nd = subset_samples(ps.cleanest, id!="N10" & id!="N1" & id!="N2" & id!="N3" & id!="N4" & id!="N5" & id!="N6" & id!="N7" & id!="N8" & id!="N9")
 #samdf.cleanest.nd <- data.frame(sample_data(ps.cleanest.nd))
 
-ps.less.nd <- readRDS(here("16S","CW_2020_16S_ps.less.nd.RDS"))
-ps.less #27653 taxa and 135 samples, samples with counts <1,000 removed (9 samples removed)
-#in addition, removing the astreoides samples
-ps.less.nd = subset_samples(ps.less, id!="N10" & id!="N11" & id!="N2" & id!="N3" & id!="N4" & id!="N5" & id!="N6" & id!="N7" & id!="N8" & id!="N9")
-ps.less.nd.no.astreoides = subset_samples(ps.less.nd, id!="J9" & id!="J10" & id!="J11" & id!="J12" & id!="K1" & id!="K2")
-samdf.less.nd <- data.frame(sample_data(ps.less.nd.no.astreoides))
-
-ps.rare <- readRDS(here("16S","CW_2020_16S_ps.rare.nd.RDS"))
-#ps.rare #23759 taxa and 98 samples, rarefied to 10,000 (46 samples removed)
-#ps.rare.nd = subset_samples(ps.rare, id!="N10" & id!="N11" & id!="N2" & id!="N3" & id!="N4" & id!="N5" & id!="N6" & id!="N7" & id!="N8" & id!="N9")
-#samdf.rare.nd <- data.frame(sample_data(ps.rare.nd))
-
-ps.trim <- readRDS("CW_2020_16S_ps.trim.RDS")
-ps.trim #835 taxa and 134 samples, trimmed witN MCMC OTU for low abundance taxa (10 samples removed)
-ps.trim.nd = subset_samples(ps.trim, id!="N10" & id!="N11" & id!="N2" & id!="N3" & id!="N4" & id!="N5" & id!="N6" & id!="N7" & id!="N8" & id!="N9")
-ps.trim.nd.no.astreoides = subset_samples(ps.trim.nd, id!="J9" & id!="J10" & id!="J11" & id!="J12" & id!="K1" & id!="K2")
-samdf.trim.nd <- data.frame(sample_data(ps.trim.nd.no.astreoides))
-
-#ps.trim.rare <- readRDS("CW_2020_16S_ps.trim.rare.RDS")
-#ps.trim.rare #835 taxa and 120 samples, trimmed dataset rarefied to 3498 (24 samples removed)
-#ps.trim.rare.nd = subset_samples(ps.trim.rare, id!="H10" & id!="H11" & id!="H2" & id!="H3" & id!="H4" & id!="H5" & id!="H6" & id!="H7" & id!="H8" & id!="H9")
-#samdf.trim.rare.nd <- data.frame(sample_data(ps.trim.rare.nd))
-
+# ps.less.nd <- readRDS(here("16S","CW_2020_16S_ps.less.nd.RDS"))
+# ps.less #27653 taxa and 135 samples, samples with counts <1,000 removed (9 samples removed)
+# #in addition, removing the astreoides samples
+# ps.less.nd = subset_samples(ps.less, id!="N10" & id!="N11" & id!="N2" & id!="N3" & id!="N4" & id!="N5" & id!="N6" & id!="N7" & id!="N8" & id!="N9")
+# ps.less.nd.no.astreoides = subset_samples(ps.less.nd, id!="J9" & id!="J10" & id!="J11" & id!="J12" & id!="K1" & id!="K2")
+# samdf.less.nd <- data.frame(sample_data(ps.less.nd.no.astreoides))
+# 
+# ps.rare <- readRDS(here("16S","CW_2020_16S_ps.rare.nd.RDS"))
+# #ps.rare #23759 taxa and 98 samples, rarefied to 10,000 (46 samples removed)
+# #ps.rare.nd = subset_samples(ps.rare, id!="N10" & id!="N11" & id!="N2" & id!="N3" & id!="N4" & id!="N5" & id!="N6" & id!="N7" & id!="N8" & id!="N9")
+# #samdf.rare.nd <- data.frame(sample_data(ps.rare.nd))
+# 
+# ps.trim <- readRDS("CW_2020_16S_ps.trim.RDS")
+# ps.trim #835 taxa and 134 samples, trimmed witN MCMC OTU for low abundance taxa (10 samples removed)
+# ps.trim.nd = subset_samples(ps.trim, id!="N10" & id!="N11" & id!="N2" & id!="N3" & id!="N4" & id!="N5" & id!="N6" & id!="N7" & id!="N8" & id!="N9")
+# ps.trim.nd.no.astreoides = subset_samples(ps.trim.nd, id!="J9" & id!="J10" & id!="J11" & id!="J12" & id!="K1" & id!="K2")
+# samdf.trim.nd <- data.frame(sample_data(ps.trim.nd.no.astreoides))
+# 
 # Diversity
 #[Notes from phyloseq author](https://rdrr.io/bioc/phyloseq/man/estimate_richness.html)
 #Visualize alpha-diversity - Should be done on raw, untrimmed dataset
 
 #Generate diversity metrics
 #run through this code to estimate these based on each different dataset above
-df <- data.frame(estimate_richness(ps.less.nd.no.astreoides, split=TRUE, measures=c("Shannon","InvSimpson","Observed")))
+# df <- data.frame(estimate_richness(ps.less.nd, split=TRUE, measures=c("Shannon","InvSimpson","Observed")))
+# 
+# df$id <- rownames(df)
+# samdf.less.nd <- data.frame(sample_data(ps.less.nd))
+# df.div <- merge(df,samdf.less.nd,by="id") #add sample data
+# #df.div <- df.div %>% select(-collection_latitude,-collection_longitude,-collection_year,-collection_month,-collection_depth,-collection_date)
+# 
+# #add evenness = shannon diversity divided by species richness
+# df.div$even <- df.div$Shannon/(log(df.div$Observed))
+# 
+# df.div$r_b_m_y <- paste(df.div$reef_bay,df.div$m_y)
+# 
+# #SAVE DATAFRAME
+# write.csv(df.div, file = "CW_2020_diversity_df.ps.less.csv", row.names = FALSE)
 
-df$id <- rownames(df)
-df.div <- merge(df,samdf.less.nd,by="id") #add sample data
-#df.div <- df.div %>% select(-collection_latitude,-collection_longitude,-collection_year,-collection_month,-collection_depth,-collection_date)
-
-#add evenness = shannon diversity divided by species richness
-df.div$even <- df.div$Shannon/(log(df.div$Observed))
-
-df.div$r_b_m_y <- paste(df.div$reef_bay,df.div$m_y)
-
-#SAVE DATAFRAME
-write.csv(df.div, file = "CW_2020_diversity_df.ps.less.csv", row.names = FALSE)
-
-#READ BACK IN HERE!! START HERE IF COMING BACK TO THIS SCRIPT!!
+####READ IN DATA###
 df.div <- read.csv("CW_2020_diversity_df.ps.less.csv")
 
 #melt to get all variables together
@@ -95,7 +87,6 @@ lapply(df.div.melt, levels)
 df.div.ss <- subset(df.div,host_species=="siderea")
 df.div.sr <- subset(df.div,host_species=="radians")
 df.div.pp <- subset(df.div,host_species=="porites")
-#df.div.pa <- subset(df.div,host_species=="astreoides")
 
 #Separate by site
 #df.div.SWB <- subset(df.div,site_zone=="SW_bay")
@@ -142,13 +133,13 @@ gg.spp.sha <- ggplot(df.div,aes(x=host_species,y=Shannon,fill=host_species))+
   geom_boxplot(outlier.shape=NA,size=1)+
   theme_classic(base_size=22)+
   geom_jitter(alpha=0.5)+
-  scale_fill_manual("Coral Species", values = c("darkkhaki","darksalmon","indianred"), labels = c(substitute(paste(italic("Porites spp."))), substitute(paste(italic("S. radians"))),substitute(paste(italic("S. siderea")))))+
+  scale_fill_manual("Coral Species", values = c("darkkhaki","darksalmon","indianred"), labels = c(substitute(paste(italic("Porites sp."))), substitute(paste(italic("S. radians"))),substitute(paste(italic("S. siderea")))))+
   ylab("Shannon Index")+
   xlab("Coral Species")+
   theme(legend.position="right",axis.text.x = element_blank(),axis.ticks.x=element_blank())
   #facet_wrap(m_y~.,scales = "free_x")
 gg.spp.sha
-ggsave(gg.spp.sha,file="16S.species.sha.pdf",h=15,w=10)
+#ggsave(gg.spp.sha,file="16S.species.sha.pdf",h=15,w=10)
 
 ##Separated by species
 
@@ -165,7 +156,7 @@ gg.site.sha.ss <- ggplot(df.div.ss,aes(x=site_zone,y=Shannon,fill=site_zone))+
   #ggtitle(substitute(paste(italic("Siderastrea siderea"))))+
   #facet_wrap(m_y~.,scales = "free_x")+
   theme(legend.position="right",axis.text.x = element_blank(),axis.ticks.x=element_blank())
-gg.site.sha.ss
+#gg.site.sha.ss
 #ggsave(gg.site.sha.ss,file="16S.ss.sha.pdf",h=6,w=8)
 
 #siderastrea radians shannon plot
@@ -180,7 +171,7 @@ gg.site.sha.sr <- ggplot(df.div.sr,aes(x=site_zone,y=Shannon,fill=site_zone))+
   #ggtitle(substitute(paste(italic("Siderastrea radians"))))+
   theme(legend.position="right",axis.text.x = element_blank(),axis.ticks.x=element_blank())
   #facet_wrap(m_y~.,scales = "free_x")
-gg.site.sha.sr
+#gg.site.sha.sr
 #ggsave(gg.site.sha.sr,file="16S.sr.sha.pdf",h=8,w=6)
 
 #porites porites shannon graph
@@ -198,51 +189,6 @@ gg.site.sha.pp <- ggplot(df.div.pp,aes(x=site_zone,y=Shannon,fill=site_zone))+
 gg.site.sha.pp
 #ggsave(gg.site.sha.pp,file="16S.pp.sha.pdf",h=8,w=6)
 
-#put all 3 figures together
-#Shannon - all species
-#srppsha <- ggarrange(gg.site.sha.sr,gg.site.sha.pp,nrow = 1)
-#all_shannon_plot <- ggarrange(gg.site.sha.ss, srppsha,nrow = 1)
-#ggsave(all_shannon_plot, file = "all_shannon_plot.ps.less.pdf", h=8, w=16)
-
-#gg.site.sha.pa <- ggplot(df.div.pa,aes(x=site_zone,y=Shannon,color=site_zone))+
-#   geom_boxplot(outlier.shape=NA,size=1)+
-#   geom_jitter(alpha=0.5)+
-#   scale_color_manual(values=c("#FC8D62","#66C2A5"))+
-#   stat_summary(geom = 'text', label = c("a","b"), fun.y = max, vjust = -0.5, size =6)+
-#   ylab("Shannon index")+
-#   xlab("Site")+
-#   theme_classic(base_size = 22)+
-#   theme(legend.position="none",axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-#   #facet_wrap(m_y~.,scales = "free_x")
-# gg.site.sha.pa
-# #ggsave(gg.site.sha.pa,file="16S.pa.sha.pdf",h=8,w=6)
-
-### INVERSE SIMPSON INDEX
-#all species together by site
-# gg.site.simp <- ggplot(df.div,aes(x=site_zone,y=InvSimpson,color=site_zone))+
-#   geom_boxplot(outlier.shape=NA,size=1)+
-#   geom_jitter(alpha=0.5)+
-#   theme_classic(base_size=10)+
-#   scale_colour_brewer(palette = "Set2", direction = - 1)+
-#   ylab("InvSimpson index")+
-#   xlab("Site")+
-#   theme(legend.position="none",axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
-#   facet_wrap(m_y~host_species,scales = "free_x")
-# gg.site.simp
-# #ggsave(gg.site.simp,file="16S.all.simp.pdf",h=20,w=10)
-
-#all sites together by species
-# gg.spp.simp <- ggplot(df.div,aes(x=host_species,y=InvSimpson,color=host_species))+
-#   geom_boxplot(outlier.shape=NA,size=1)+
-#   geom_jitter(alpha=0.5)+
-#   scale_colour_brewer(palette = "Set2", direction = - 1)+
-#   ylab("InvSimpson index")+
-#   xlab("Species")+
-#   theme(legend.position="none",axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
-#   facet_wrap(site_zone~.,scales = "free_x")
-# gg.spp.simp
-#ggsave(gg.spp.simp,file="16S.species.simp.pdf",h=15,w=10)
-
 ##Plots separated by species - INVERSE SIMPSON
 
 #species comparison - simposon
@@ -250,7 +196,7 @@ gg.spp.simp <- ggplot(df.div,aes(x=host_species,y=InvSimpson,fill=host_species))
   geom_boxplot(outlier.shape=NA,size=1)+
   theme_classic(base_size=22)+
   geom_jitter(alpha=0.5)+
-  scale_fill_manual("Coral Species", values = c("darkkhaki","darksalmon","indianred"), labels = c(substitute(paste(italic("Porites spp."))), substitute(paste(italic("S. radians"))),substitute(paste(italic("S. siderea")))))+
+  scale_fill_manual("Coral Species", values = c("darkkhaki","darksalmon","indianred"), labels = c(substitute(paste(italic("Porites sp."))), substitute(paste(italic("S. radians"))),substitute(paste(italic("S. siderea")))))+
   ylab("Inverse Simpson's Index")+
   xlab("Coral Species")+
   theme(legend.position="right",axis.text.x = element_blank(),axis.ticks.x=element_blank())
@@ -303,50 +249,6 @@ gg.site.simp.pp <- ggplot(df.div.pp,aes(x=site_zone,y=InvSimpson,fill=site_zone)
 gg.site.simp.pp
 #ggsave(gg.site.simp.pp,file="16S.pp.simp.pdf",h=8,w=6)
 
-#put plots together
-#srppsimp <- ggarrange(gg.site.simp.sr,gg.site.simp.pp,nrow=1)
-#all_simpson_plot <- ggarrange(gg.site.simp.ss, srppsimp, nrow=1)
-#ggsave(all_simpson_plot, file = "all_simpson_plot.ps.less.pdf",h=8,w=16)
-
-# gg.site.simp.pa <- ggplot(df.div.pa,aes(x=site_zone,y=InvSimpson,color=site_zone))+
-#   geom_boxplot(outlier.shape=NA,size=1)+
-#   geom_jitter(alpha=0.5)+
-#   scale_color_manual(values=c("#FC8D62","#66C2A5"))+
-#   #stat_summary(geom = 'text', label = c("a","b"), fun.y = max, vjust = -0.5, size = 6)+
-#   ylab("InvSimpson index")+
-#   xlab("Site")+
-#   theme_classic(base_size = 22)+
-#   theme(legend.position="none",axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-# #facet_wrap(m_y~.,scales = "free_x")
-# gg.site.simp.pa
-#ggsave(gg.site.simp.pa,file="16S.pa.simp.pdf",h=8,w=6)
-
-### Richness ###
-# #all species together - plot by site
-# gg.site.rich <- ggplot(df.div,aes(x=site_zone,y=Observed,color=site_zone))+
-#   geom_boxplot(outlier.shape=NA,size=1)+
-#   geom_jitter(alpha=0.5)+
-#   theme_classic(base_size=10)+
-#   scale_colour_brewer(palette = "Set2", direction = - 1)+
-#   ylab("Richness")+
-#   xlab("Site")+
-#   theme(legend.position="none",axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
-#   facet_wrap(m_y~host_species,scales = "free_x")
-# gg.site.rich
-# #ggsave(gg.site.rich,file="16S.all.rich.pdf",h=20,w=10)
-# 
-# #all sites toether - plot by species
-# gg.spp.rich <- ggplot(df.div,aes(x=host_species,y=Observed,color=host_species))+
-#   geom_boxplot(outlier.shape=NA,size=1)+
-#   geom_jitter(alpha=0.5)+
-#   scale_colour_brewer(palette = "Set2", direction = - 1)+
-#   ylab("Richness")+
-#   xlab("Species")+
-#   theme(legend.position="none",axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
-#   facet_wrap(site_zone~.,scales = "free_x")
-# gg.spp.rich
-#ggsave(gg.spp.rich,file="16S.species.rich.pdf",h=15,w=10)
-
 ##RICHNESS GRAPHS/PLOTS BY SPECIES
 
 #species comparison
@@ -354,7 +256,7 @@ gg.spp.rich <- ggplot(df.div,aes(x=host_species,y=Observed,fill=host_species))+
   geom_boxplot(outlier.shape=NA,size=1)+
   theme_classic(base_size=22)+
   geom_jitter(alpha=0.5)+
-  scale_fill_manual("Coral Species", values = c("darkkhaki","darksalmon","indianred"), labels = c(substitute(paste(italic("Porites spp."))), substitute(paste(italic("S. radians"))),substitute(paste(italic("S. siderea")))))+
+  scale_fill_manual("Coral Species", values = c("darkkhaki","darksalmon","indianred"), labels = c(substitute(paste(italic("Porites sp."))), substitute(paste(italic("S. radians"))),substitute(paste(italic("S. siderea")))))+
   ylab("Richness")+
   xlab("Coral Species")+
   theme(legend.position="right",axis.text.x = element_blank(),axis.ticks.x=element_blank())
@@ -409,56 +311,13 @@ gg.site.rich.pp <- ggplot(df.div.pp,aes(x=site_zone,y=Observed,fill=site_zone))+
 gg.site.rich.pp
 #ggsave(gg.site.rich.pp,file="16S.pp.rich.pdf",h=8,w=6)
 
-#put plots together
-#srpprich <- ggarrange(gg.site.rich.sr,gg.site.rich.pp,nrow=1)
-#all_richness_plot <- ggarrange(gg.site.rich.ss, srpprich, nrow=1)
-#ggsave(all_richness_plot, file = "all_richness_plot.ps.less.pdf",h=8,w=16)
-
-#porites astreoides richness
-# gg.site.rich.pa <- ggplot(df.div.pa,aes(x=site_zone,y=Observed,color=site_zone))+
-#   geom_boxplot(outlier.shape=NA,size=1)+
-#   geom_jitter(alpha=0.5)+
-#   scale_color_manual(values=c("#FC8D62","#66C2A5"))+
-#   stat_summary(geom = 'text', label = c("a","b"), fun.y = max, vjust = -0.5, size =6)+
-#   ylab("Richness")+
-#   xlab("Site")+
-#   theme_classic(base_size = 22)+
-#   theme(legend.position="none",axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-# #facet_wrap(m_y~.,scales = "free_x")
-# gg.site.rich.pa
-#ggsave(gg.site.rich.pa,file="16S.pa.rich.pdf",h=8,w=6)
-
-### Evenness
-#all species together - site comparisons evenness
-# gg.site.even <- ggplot(df.div,aes(x=site_zone,y=even,color=site_zone))+
-#   geom_boxplot(outlier.shape=NA,size=1)+
-#   geom_jitter(alpha=0.5)+
-#   scale_colour_brewer(palette = "Set2", direction = - 1)+
-#   ylab("Evenness")+
-#   xlab("Site")+
-#   theme(legend.position="none",axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
-#   facet_wrap(m_y~host_species,scales = "free_x")
-# gg.site.even
-#ggsave(gg.site.even,file="16S.all.even.pdf",h=20,w=10)
-
-#all sites together - species comparisons evenness
-# gg.spp.even <- ggplot(df.div,aes(x=host_species,y=even,color=host_species))+
-#   geom_boxplot(outlier.shape=NA,size=1)+
-#   geom_jitter(alpha=0.5)+
-#   scale_colour_brewer(palette = "Set2", direction = - 1)+
-#   ylab("Evenness")+
-#   xlab("Species")+
-#   theme(legend.position="none",axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
-#   facet_wrap(site_zone~.,scales = "free_x")
-# gg.spp.even
-#ggsave(gg.spp.even,file="16S.species.even.pdf",h=15,w=10)
-
+#evenness
 #species comparison
 gg.spp.even <- ggplot(df.div,aes(x=host_species,y=even,fill=host_species))+
   geom_boxplot(outlier.shape=NA,size=1)+
   theme_classic(base_size=22)+
   geom_jitter(alpha=0.5)+
-  scale_fill_manual("Coral Species", values = c("darkkhaki","darksalmon","indianred"), labels = c(substitute(paste(italic("Porites spp."))), substitute(paste(italic("S. radians"))),substitute(paste(italic("S. siderea")))))+
+  scale_fill_manual("Coral Species", values = c("darkkhaki","darksalmon","indianred"), labels = c(substitute(paste(italic("Porites sp."))), substitute(paste(italic("S. radians"))),substitute(paste(italic("S. siderea")))))+
   ylab("Evenness")+
   xlab("Coral Species")+
   theme(legend.position="right",axis.text.x = element_blank(),axis.ticks.x=element_blank())
@@ -514,10 +373,6 @@ gg.site.even.pp
 #ggsave(gg.site.even.pp,file="16S.pp.even.pdf",h=8,w=6)
 
 #put plots together
-#srppeven <- ggarrange(gg.site.even.sr,gg.site.even.pp,nrow=1)
-#all_evenness_plot <- ggarrange(gg.site.even.ss, srppeven, nrow=1)
-#ggsave(all_evenness_plot, file = "all_evenness_plot.ps.less.pdf",h=8,w=16)
-
 shasimprichsid <- ggarrange(gg.site.sha.ss,gg.site.simp.ss,gg.site.rich.ss, legend = FALSE, nrow=1, labels = c("A","B","C"), font.label = list(size = 30, color = "black"))
 evenfaithsid <- ggarrange(gg.site.even.ss,gg.site.faith.ss, nrow=1, widths = c(0.6, 1), labels = c("D","E"), font.label = list(size = 30, color = "black"))
 all_sid_alpha_plot <- ggarrange(shasimprichsid,evenfaithsid, nrow=2)
@@ -542,14 +397,12 @@ shasimprichpor <- ggarrange(gg.site.sha.pp,gg.site.simp.pp,gg.site.rich.pp, lege
 evenfaithpor <- ggarrange(gg.site.even.pp,gg.site.faith.pp, nrow=1, widths = c(0.5, 0.7), labels = c("D","E"), font.label = list(size = 30, color = "black"))
 all_por_alpha_plot <- ggarrange(shasimprichpor,evenfaithpor, nrow=2)
 #all_por_alpha_plot <- annotate_figure(all_por_alpha_plot, top = text_grob("Porites porites", color = "black", hjust = 1.6, face = "italic", size = 60))
-ggsave(all_por_alpha_plot, file = "all_por_alpha_plot.ps.less.pdf",h=13,w=17)
+ggsave(all_por_alpha_plot, file = here("16S","all_por_alpha_plot.ps.less.pdf"),h=13,w=17)
 
 #all plots by coral species together
-shasimprichspp <- ggarrange(gg.spp.sha,gg.spp.simp,gg.spp.rich, nrow=1, labels = c("A","B","C"), font.label = list(size = 30, color = "black"), legend = "none")
-evenfaithspp <- ggarrange(gg.spp.even,gg.spp.pd, nrow=1, widths = c(1, 1), labels = c("D","E"), font.label = list(size = 30, color = "black"), legend = "right", common.legend = TRUE)
-all_spp_alpha_plot <- ggarrange(shasimprichspp,evenfaithspp, nrow=2)
-#all_spp_alpha_plot <- annotate_figure(all_spp_alpha_plot, top = text_grob("Coral Species", color = "black", hjust = 1.15, face = "bold", size = 60))
-ggsave(all_spp_alpha_plot, file = "all_spp_alpha_plot.pdf",h=13,w=17)
+all_spp_alpha_plot <- ggarrange(gg.spp.sha,gg.spp.simp,gg.spp.rich,gg.spp.even, nrow=1, labels = c("A","B","C","D"), font.label = list(size = 50, color = "black"), legend = "right", common.legend = T)
+ggsave(all_spp_alpha_plot, file = here("16S","all_spp_alpha_plot.pdf"),h=7,w=20)
+saveRDS(all_spp_alpha_plot, file = here("16S","all_spp_alpha_plot.rds"))
 
 # gg.site.even.pa <- ggplot(df.div.pa,aes(x=site_zone,y=even,color=site_zone))+
 #   geom_boxplot(outlier.shape=NA,size=1)+
@@ -563,234 +416,6 @@ ggsave(all_spp_alpha_plot, file = "all_spp_alpha_plot.pdf",h=13,w=17)
 # #facet_wrap(m_y~.,scales = "free_x")
 # gg.site.even.pa
 #ggsave(gg.site.even.pa,file="16S.pa.even.pdf",h=8,w=6)
-
-## Phylogenetic diversity (Faith's D)
-
-#Tutorial from dada2 author: https://f1000research.com/articles/5-1492/v2
-
-#packages for Faith's D
-#install.packages('devtools')
-library(devtools)
-#BiocManager::install("DESeq2")
-library("DESeq2")
-#BiocManager::install("genefilter")
-library("genefilter")
-#BiocManager::install("biomformat")
-library("biomformat")
-BiocManager::install('twbattaglia/btools')
-library(btools)
-
-#Generate fasta file (did this in previous script, so don't need it here)
-#(I'm not running the following chunk every time, because only need to generate the file once)
-
-#rare.otu <- as.matrix(ps.rare@otu_table)
-# rare.taxa <- data.frame(ps.rare@tax_table)
-# rownames(rare.taxa)==colnames(rare.otu)
-# colnames(rare.otu) <- rare.taxa$V8
-# ids <- rownames(rare.taxa)
-# path="~/Documents/curacao_2020/16S_analysis/curacao_2020.cleanest.fasta"
-# uniquesToFasta(rare.otu, path, ids = ids, mode = "w", width = 20000)
-
-#Actual analysis part: 
-#(Im not running the following chunk every time, because only need to generate the files once)
-#seqs <- getSequences("CW_2020_16S_less.fasta")
-#names(seqs) <- seqs # This propagates to the tip labels of the tree
-#saveRDS(seqs,file="CW_2020_16S_less_phylo_seqs.rds")
-#and now a trimmed one too to compare
-#seqs <- getSequences("CW_2020_16S_trim.fasta")
-#names(seqs) <- seqs # This propagates to the tip labels of the tree
-#saveRDS(seqs,file="CW_2020_16S_trim_phylo_seqs.rds")
-
-#Do this next part in the cluster because it takes forever
-
-##script faith_d.R:
-##Maya Powell
-#Faith's D script for getting phylogenetic diversity info
-#Run this on the cluster
-#July 29th 2023
-
-library(dada2)
-library(phangorn)
-library(DECIPHER)
-
-seqs <- readRDS("/proj/kdcastil/users/mayapow/CW_2020_TUCF_ALL/Faith_D/CW_2020_16S_less_phylo_seqs.rds")
-alignment <- AlignSeqs(DNAStringSet(seqs), anchor=NA)
-phang.align <- phyDat(as(alignment, "matrix"), type="DNA")
-dm <- dist.ml(phang.align)
-treeNJ <- NJ(dm) # Note, tip order != sequence order
-fit = pml(treeNJ, data=phang.align)
-
-# ## negative edges length changed to 0!
-fitGTR <- update(fit, k=4, inv=0.2)
-fitGTR <- optim.pml(fitGTR, model="GTR", optInv=TRUE, optGamma=TRUE,
-                    rearrangement = "stochastic", control = pml.control(trace = 0))
-detach("package:phangorn", unload=TRUE)
-saveRDS(fitGTR, file="/proj/kdcastil/users/mayapow/CW_2020_TUCF_ALL/Faith_D/CW_2020_16S_phylo_fitgtr_less.rds")
-#make sure to put absolute filepath, otherwise it won't work
-#tried to run with only 10g of memory but it ran out of memory so had to increase to 30
-
-#make phylo.sh file
-#nano phylo.sh
-
-#!/bin/bash
-
-#SBATCH -p general
-#SBATCH -N 1
-#SBATCH --mem=30g
-#SBATCH -n 28
-#SBATCH -t 2-00:00:00
-
-#module load r/4.3.1
-#module load rstudio
-#Rscript faith_d.R
-
-##exit (cntrl X) and save!
-
-##on cluster:
-#sbatch phylo.sh
-#to check status: squeue -u mayapow
-#you'll also be able to see slurm output file updating as you go
-
-##saved output as: CW_2020_16S_phylo_fitgtr_less.rds
-
-#Now back to R
-
-library(btools)
-
-fitGTR <- readRDS("CW_2020_16S_phylo_fitgtr_trim.rds")
-
-#using ps.trim here bc don't have the data for ps.less right now
-#currently running on the cluster 9/16/2023
-
-#new phyloseq object:
-taxa.trim <- data.frame(ps.trim.nd.no.astreoides@tax_table)
-seqtab.trim <- data.frame(ps.trim.nd.no.astreoides@otu_table)
-taxa.trim$sqs <- row.names(taxa.trim) 
-taxa.trim$sqs == colnames(seqtab.trim)
-row.names(taxa.trim) <- taxa.trim$V8
-colnames(seqtab.trim) <- taxa.trim$V8
-row.names(taxa.trim) == colnames(seqtab.trim)
-taxa.trim <- as.matrix(taxa.trim)
-
-ps.trim.tree <- phyloseq(otu_table(seqtab.trim, taxa_are_rows = FALSE),
-                         sample_data(samdf.trim.nd),
-                         tax_table(taxa.trim),
-                         phy_tree(fitGTR$tree))
-
-pd.div <- estimate_pd(ps.trim.tree)
-row.names(df.div) <- df.div$id
-df.div.pd <- merge(df.div,pd.div,by=0)
-
-## saving diversity data frame ##
-#save & read back in as needed
-write.csv(df.div.pd,file="df.pd.div.csv") #saving
-df.div.pd <- read.csv("df.pd.div.csv",row.names=1,header=TRUE) #reading back in
-
-##post trimming:
-# fitGTR.trim <- readRDS("phylo.fitgtr.rev.cleanest.trimmed.rds")
-# 
-# #new phyloseq object:
-# taxa.rare <- data.frame(ps.rare.trim@tax_table)
-# seqtab.rare <- data.frame(ps.rare.trim@otu_table)
-# taxa.rare$sqs <- row.names(taxa.rare) 
-# taxa.rare$sqs == colnames(seqtab.rare)
-# row.names(taxa.rare) <- taxa.rare$V8
-# colnames(seqtab.rare) <- taxa.rare$V8
-# row.names(taxa.rare) == colnames(seqtab.rare)
-# taxa.rare <- as.matrix(taxa.rare)
-# 
-# ps.rare.tree <- phyloseq(otu_table(seqtab.rare, taxa_are_rows = FALSE),
-#                          sample_data(samdf),
-#                          tax_table(taxa.rare),
-#                          phy_tree(fitGTR.trim$tree))
-# 
-# pd.div <- estimate_pd(ps.rare.tree)
-# row.names(df.div) <- df.div$id
-# df.div.pd <- merge(df.div,pd.div,by=0)
-
-
-#ATTEMPTING TO MAKE FAITH'S D using picante
-library('picante')
-library(microbiomeMarker)
-
-#using phyloseq object:
-ps.less.nd.no.astreoides
-
-tree.ps.less <- microbiomeMarker::get_treedata_phyloseq(ps.less.nd.no.astreoides, sep = "|")
-#tree.ps.less <- phy_tree(ps.less.nd.no.astreoides)
-#no tree object already created within the ps object, need to make a new one
-
-#it did not work bc I found out that the only way to create a tree really is through the phang.align and then the NJ step
-#which also don't work for other people
-#and the only solution I can find online is "MORE RAM" which is stupid
-
-### Faith's D Plots {.tabset}
-
-#subset by species for new dataframe with PD added
-df.div.pd.ss <- subset(df.div.pd,host_species=="siderea")
-df.div.pd.sr <- subset(df.div.pd,host_species=="radians")
-df.div.pd.pp <- subset(df.div.pd,host_species=="porites")
-
-##species comparison faith's d
-gg.spp.pd <- ggplot(df.div.pd,aes(x=host_species,y=PD,fill=host_species))+
-  geom_boxplot(outlier.shape=NA,size=1)+
-  theme_classic(base_size=22)+
-  geom_jitter(alpha=0.5)+
-  scale_fill_manual("Coral Species", values = c("darkkhaki","darksalmon","indianred"), labels = c(substitute(paste(italic("Porites spp."))), substitute(paste(italic("S. radians"))),substitute(paste(italic("S. siderea")))))+
-  ylab("Phylogenetic Diversity")+
-  xlab("Coral Species")+
-  theme(legend.position="right",axis.text.x = element_blank(),axis.ticks.x=element_blank())
-#facet_wrap(site_zone~.,scales = "free_x")
-gg.spp.pd
-
-#siderastrea siderea faith D plot
-gg.site.faith.ss <- ggplot(df.div.pd.ss,aes(x=site_zone,y=PD,fill=site_zone))+
-  geom_boxplot(outlier.shape=NA,size=1)+
-  theme_classic(base_size = 25)+
-  #stat_summary(geom = 'text', label = c("a","a","a","b"), fun.y = max, vjust = -0.5,size=8)+
-  geom_jitter(alpha=0.5,width = .2)+
-  scale_fill_manual("Site", values = c("coral3", "paleturquoise","lightsalmon1","deepskyblue4"), labels=c('Santa Martha Bay', 'Santa Martha Reef', 'Spaanse Water Bay','Spannse Water Reef'))+
-  ylab("Phylogenetic Diversity")+
-  xlab("Site")+
-  ylim(5, 55)+
-  ggtitle(substitute(paste(italic(" "))))+
-  theme(legend.position="right",legend.key.size = unit(2, 'cm'),axis.text.x = element_blank(),axis.ticks.x = element_blank())
-  #theme(legend.position="right",legend.key.size = unit(2, 'cm'),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-#facet_wrap(m_y~.,scales = "free_x")
-gg.site.faith.ss
-ggsave(gg.site.faith.ss,file="16S.ss.faith.pdf",h=8,w=8)
-
-#siderastrea radians faithness plot
-gg.site.faith.sr <- ggplot(df.div.pd.sr,aes(x=site_zone,y=PD,fill=site_zone))+
-  geom_boxplot(outlier.shape=NA,size=1)+
-  #stat_summary(geom = 'text', label = c("a","a"), fun.y = max, size=6)+
-  geom_jitter(alpha=0.5,width = .2)+
-  scale_fill_manual("Site", values = c("coral3","lightsalmon1"),labels=c('Santa Martha Bay','Spaanse Water Bay'))+
-  ylab("Phylogenetic Diversity")+
-  xlab("Site")+
-  ylim(5, 55)+
-  ggtitle(substitute(paste(italic(" "))))+
-  theme_classic(base_size = 25)+
-  theme(legend.position="right", legend.key.size = unit(2, 'cm'), axis.text.x = element_blank(), axis.ticks.x=element_blank())
-#facet_wrap(m_y~.,scales = "free_x")
-gg.site.faith.sr
-#ggsave(gg.site.faith.sr,file="16S.sr.faith.pdf",h=8,w=6)
-
-#porites porites faithness plot
-gg.site.faith.pp <- ggplot(df.div.pd.pp,aes(x=site_zone,y=PD,fill=site_zone))+
-  geom_boxplot(outlier.shape=NA,size=1)+
-  geom_jitter(alpha=0.5,width = .2)+
-  scale_fill_manual("Site", values = c("coral3", "paleturquoise"),labels=c('Santa Martha Bay', 'Santa Martha Reef'))+
-  ylab("Phylogenetic Diversity")+
-  xlab("Site")+
-  ylim(5, 55)+
-  ggtitle(substitute(paste(italic(" "))))+
-  theme_classic(base_size = 25)+
-  theme(legend.position="right", legend.key.size = unit(2, 'cm'), axis.text.x = element_blank(), axis.ticks.x=element_blank())
-#facet_wrap(m_y~.,scales = "free_x")
-gg.site.faith.pp
-#ggsave(gg.site.faith.pp,file="16S.pp.faith.pdf",h=8,w=6)
-
 
 #MP 25 June 2023
 #Separating into groups by samples

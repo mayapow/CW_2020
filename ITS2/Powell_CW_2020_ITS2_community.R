@@ -16,6 +16,7 @@ library("ggpubr"); packageVersion("ggpubr") #‘0.6.2’
 library("vegan"); packageVersion("vegan") #‘2.7.2’
 library("tidyverse"); packageVersion("tidyverse") #‘2.0.0’
 library("stats"); packageVersion("stats") #‘4.5.2’
+library("microbiome"); packageVersion("microbiome") #1.32.0
 #remotes::install_github("KarstensLab/microshades")
 #library("microshades"); packageVersion("microshades") #only needed for microshades section
 #library("remotes")
@@ -100,6 +101,11 @@ library("here"); packageVersion("here") #‘1.0.2’
 #                                            site == "SMR" ~ "Santa Martha Reef",
 #                                            site == "SWB" ~ "Spaanse Water Bay", 
 #                                            site == "DB" ~ "Spaanse Water Reef"))
+# ps.nd.all <- ps.nd.all %>% ps_mutate(tp_suffix = case_when(
+#                                            m_y == "March_2020"    ~ "a",
+#                                            m_y == "November_2020" ~ "b",
+#                                            m_y == "November_2021" ~ "c")) %>%
+#   ps_mutate(number_time = paste0(number,tp_suffix))
 # 
 # ps.nd.all = subset_samples(ps.all, id!= "D6" & id!="N10" & id!="N11" & id!="N12" & id!= "N1" & id!="N2" & id!="N3" & id!="N4" & id!="N5" & id!="N6" & id!="N7" & id!="N8" & id!="N9")
 # ps.nd = subset_samples(ps, id!= "D6" & id!="N10" & id!="N11" & id!="N12" & id!= "N1" & id!="N2" & id!="N3" & id!="N4" & id!="N5" & id!="N6" & id!="N7" & id!="N8" & id!="N9")
@@ -135,76 +141,153 @@ ps.pp.all.rel <- subset_samples(ps.all.rel, host_species=="porites")
 #ps.pa.all.rel <- subset_samples(ps.all.rel, host_species=="astreoides")
 
 ######BAR PLOTS#####
+#taxa <- as.data.frame(ps.rel@tax_table)
+#unique(taxa$Majority_ITS2_sequence)
+
+
+#c("A4","A4ch","B19","B19aq","B19ao","B19ap","B5","B2","C46","C3","C42ef/C42eg","C46/C3","C46/C1","C47a","C46/C42.2","C42eg/C42ef","C1","C45l","C45a","C3af","C42.2","D1")
+maj_its2_colors = c("A4"= "#ffaabb","A4ch" = "#ffaaff",
+                    "B19"= "#aaaa00","B19aq" = "#aaad77","B19ao" = "#baaa88","B19ap" = "#caaa99",
+                    "B5"= "#44bb99","B2"="#225522",
+                    "C46"="#222255","C3"="#77aadd","C42ef/C42eg"="#225544",
+                    "C46/C3"= "#222588","C46/C1"= "#225599",
+                    "C47a"="#99ddff","C46/C42.2"= "#228899","C42eg/C42ef"="#224456",
+                    "C1"="#eedd88","C45l"="#ee8860","C45a"="#ee8880",
+                    "C3af"="#77aabb","C42.2"="#225555","D1"="#994455")
+
+ps.all.rel <- subset_samples(ps.all.rel, host_species!="astreoides")
+ps.all.its2 <- aggregate_rare(ps.all.rel,
+                              level = "ITS2_type",
+                              detection = 0.1,   # 10% RA threshold
+                              prevalence = 0,      # keep all genera, just lump low-RA
+                              aggregate_name = "Other")
+ps.all.its2 <- ps.all.its2 %>% ps_filter(full_sample_id != "91SRSWBNovember2020_duplicate") %>%
+  ps_mutate(coral_species = case_when(
+      coral_species == "Branching Porites sp."    ~ "Porites sp.",
+      coral_species == "Siderastrea siderea" ~ "Siderastrea siderea",
+      coral_species == "Siderastrea radians" ~ "Siderastrea radians"))
+#tax <- as.data.frame(ps.all.its2@tax_table)
+#unique(tax$ITS2_type)
+#c("A4","B19","B5","C1","C1c","C3","C42.2","C42ef","C42eg","C45a","C45l","C46","C47a","C47c","D1","D4","Other")
+its2_cols = c("A_A4" = "#ffaabb",     
+              "B_B19"="#aaaa00", "B_B5" = "#44bb99", 
+              "C_C1"="#eedd88","C_C1c"="lightyellow2","C_C3"="#77aadd",  
+              "C_C42.2"="#225555","C_C42ef"="darkgreen","C_C42eg"="steelblue4",
+              "C_C45a"="#ee8860","C_C45l"="coral3","C_C46"="#222255",
+              "C_C47a"="#99ddff","C_C47c"="lightblue3",  
+              "D_D1"="#994455","D_D4"="darkred","Other"="darkgray")
+
+ps.ss.all.its2 <- subset_samples(ps.all.its2, host_species=="siderea")
+ps.sr.all.its2 <- subset_samples(ps.all.its2, host_species=="radians")
+ps.pp.all.its2 <- subset_samples(ps.all.its2, host_species=="porites")
 
 ##QUICK GLANCES AT DATA##
 #All data by species
-gg.bar <- plot_bar(ps.rel,"sample_full",fill="Majority_ITS2_sequence")+
+gg.bar <- plot_bar(ps.all.its2,"full_sample_id",fill="ITS2_type")+
   geom_bar(stat="identity")+
-  theme_classic()+
-  facet_grid(~host_species, scales = "free")+
+  theme_classic(base_size = 30) +
+  facet_wrap(~ coral_species, scales = "free_x", space = "free_x") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  scale_fill_manual(name = "ITS2 Type", values = its2_cols, labels = c("A4","B19","B5","C1","C1c","C3","C42.2","C42ef","C42eg","C45a","C45l","C46","C47a","C47c","D1","D4","Other"))+
   xlab("Species")+
   ylab("Relative Abundance")+
-  theme(axis.text.x=element_blank(),axis.ticks.x = element_blank())
+  theme(legend.position = "bottom",
+        axis.text.x = element_text(angle = 90, size = 15),axis.ticks.x = element_blank(),
+        strip.text = element_text(face = "italic"))
 gg.bar
+saveRDS(gg.bar, file=here("ITS2","its2.coralspecies.rds"))
 
 #siderastrea siderea - across sites
-gg.bar.ss <- plot_bar(ps.ss.rel,"sample_full",fill="Majority_ITS2_sequence")+
+gg.bar.ss <- plot_bar(ps.ss.all.its2,"number_time",fill="ITS2_type")+
   geom_bar(stat="identity")+
   theme_classic(base_size=22)+
-  facet_wrap(~site_zone, scales = "free")+
+  facet_wrap(~site_nice, scales = "free")+
+  scale_fill_manual(name = "ITS2 Type", values = its2_cols, labels = c("A4","B19","B5","C1","C1c","C3","C42.2","C42ef","C42eg","C45a","C45l","C46","C47a","C47c","D1","D4","Other"))+
   ylab("Relative Abundance")+
-  theme(axis.text.x=element_blank(),axis.ticks.x = element_blank(),axis.title.x = element_blank()) #for some reason this won't just add to the original plot
+  xlab("Sample ID") +
+  theme(axis.text.x=element_text(angle = 90)) #for some reason this won't just add to the original plot
 gg.bar.ss
 #ggsave(gg.bar.ss,file=here("ITS2","sym.barplot.ss.site.pdf"),h=10,w=15)
 
 #siderastrea siderea - across sites and time
-gg.bar.ss <- plot_bar(ps.ss.rel,"number",fill="Majority_ITS2_sequence")+
-  geom_bar(stat="identity")+
-  theme_classic(base_size=22)+
-  facet_wrap(m_y~site_nice, scales = "free")+
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
-  xlab("Site & Timepoint")+
-  ylab("Relative Abundance")
-gg.bar.ss
+ss.site.time <- plot_bar(ps.ss.all.its2, x = "number_time", fill="ITS2_type") + 
+  theme_classic(base_size = 30)+
+  xlab("Coral Genotype")+
+  ylab("Relative Abundance")+
+  facet_wrap(m_y~site_zone.1, scales = "free") +
+  scale_fill_manual(name = "ITS2 Type", values = its2_cols, labels = c("A4","B19","B5","C1","C1c","C3","C42.2","C42ef","C42eg","C45a","C45l","C46","C47a","C47c","D1","D4","Other"))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), 
+        legend.position = "none",
+        legend.title = element_text(size = 30),
+        legend.text = element_text(size = 30))+
+  xlab("Sample ID") +
+  ggtitle(substitute(paste(italic("Siderastrea siderea"))))
+ss.site.time
 
 #siderastrea radians - sites
-gg.bar.sr <- plot_bar(ps.sr.rel,"sample_full",fill="Majority_ITS2_sequence")+
+gg.bar.sr <- plot_bar(ps.sr.all.its2,"number_time",fill="ITS2_type")+
   geom_bar(stat="identity")+
   theme_classic(base_size=22)+
+  scale_fill_manual(name = "ITS2 Type", values = its2_cols, labels = c("A4","B19","B5","C1","C1c","C3","C42.2","C42ef","C42eg","C45a","C45l","C46","C47a","C47c","D1","D4","Other"))+
   facet_wrap(~site_nice, scales = "free")+
   ylab("Relative Abundance")+
-  theme(axis.text.x=element_blank(),axis.ticks.x = element_blank(),axis.title.x = element_blank()) #for some reason this won't just add to the original plot
+  xlab("Sample ID") +
+  theme(axis.text.x=element_text(angle = 90)) #for some reason this won't just add to the original plot
 gg.bar.sr
 
 #siderastrea radians - sites & time
-gg.bar.sr <- plot_bar(ps.sr.rel,"number",fill="Majority_ITS2_sequence")+
-  geom_bar(stat="identity")+
-  theme_classic(base_size=22)+
-  facet_wrap(m_y~site_nice, scales = "free", ncol = 2)+
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
-  xlab("Site & Timepoint")+
-  ylab("Relative Abundance")
-gg.bar.sr
+sr.site.time <- plot_bar(ps.sr.all.its2, x = "number_time", fill="ITS2_type") + 
+  theme_classic(base_size = 30)+
+  xlab("Coral Genotype")+
+  ylab("Relative Abundance")+
+  facet_wrap(m_y~site_zone.1, scales = "free", nrow = 3, ncol = 2) +
+  scale_fill_manual(name = "ITS2 Type", values = its2_cols, labels = c("A4","B19","B5","C1","C1c","C3","C42.2","C42ef","C42eg","C45a","C45l","C46","C47a","C47c","D1","D4","Other"))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), 
+        legend.position = "none",
+        legend.title = element_text(size = 30),
+        legend.text = element_text(size = 30))+
+  xlab("Sample ID") +
+  ggtitle(substitute(paste(italic("Siderastrea radians"))))
+sr.site.time
 
 #porites porites - sites
-gg.bar.pp <- plot_bar(ps.pp.rel,"sample_full",fill="Majority_ITS2_sequence")+
+gg.bar.pp <- plot_bar(ps.pp.all.its2,"number_time",fill="ITS2_type")+
   geom_bar(stat="identity")+
   theme_classic(base_size=22)+
+  scale_fill_manual(name = "ITS2 Type", values = its2_cols, labels = c("A4","B19","B5","C1","C1c","C3","C42.2","C42ef","C42eg","C45a","C45l","C46","C47a","C47c","D1","D4","Other"))+
   facet_wrap(~site_nice, scales = "free")+
   ylab("Relative Abundance")+
-  theme(axis.text.x=element_blank(),axis.ticks.x = element_blank(),axis.title.x = element_blank()) #for some reason this won't just add to the original plot
+  labs(title = expression(paste("Branching ", italic("Porites "), "sp.")))+
+  xlab("Sample ID") +
+  theme(axis.text.x=element_text(angle = 90)) #for some reason this won't just add to the original plot
 gg.bar.pp
 
 #porites porites - sites & time
-gg.bar.pp <- plot_bar(ps.pp.rel,"number",fill="Majority_ITS2_sequence")+
-  geom_bar(stat="identity")+
-  theme_classic(base_size=22)+
-  facet_wrap(m_y~site_nice, scales = "free", ncol = 2)+
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
-  xlab("Site & Timepoint")+
-  ylab("Relative Abundance")
-gg.bar.pp
+pp.site.time <- plot_bar(ps.pp.all.its2, x = "number_time", fill="ITS2_type") + 
+  theme_classic(base_size = 30)+
+  xlab("Coral Genotype")+
+  ylab("Relative Abundance")+
+  facet_wrap(m_y~site_zone.1, scales = "free", nrow = 2, ncol = 2) +
+  scale_fill_manual(name = "ITS2 Type", values = its2_cols, labels = c("A4","B19","B5","C1","C1c","C3","C42.2","C42ef","C42eg","C45a","C45l","C46","C47a","C47c","D1","D4","Other"))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), 
+        legend.position = "bottom",
+        legend.title = element_text(size = 30),
+        legend.text = element_text(size = 30))+
+  xlab("Sample ID") +
+  labs(title = expression(paste("Branching ", italic("Porites "), "sp.")))
+pp.site.time
+
+#put plots together - just time for this section
+sym_all_time <- ggarrange(ss.site.time,
+                          ggarrange(sr.site.time, pp.site.time, ncol = 2, 
+                                    labels = c("B", "C"), font.label = list(size = 50)), 
+                          #heights = c(1,2), widths = c(2,1), 
+                          nrow = 2,
+                          #legend = "right", common.legend = TRUE, 
+                          labels = c("A"),font.label = list(size = 50))
+sym_all_time
+ggsave(sym_all_time, file=here("ITS2","its2.type.plot.time.all.pdf"),width=25,height=30)
+
 
 #### Dominant ITS2 Majority Types and DIVs ####
 
@@ -291,6 +374,11 @@ gg.bar.pp
 # # tax_table()   Taxonomy Table:     [ 11 taxa by 2 taxonomic ranks ]:
 # # taxa are columns
 # 
+# ps.its2.maj <- ps.its2.maj %>% ps_mutate(tp_suffix = case_when(
+#   m_y == "March_2020"    ~ "a",
+#   m_y == "November_2020" ~ "b",
+#   m_y == "November_2021" ~ "c")) %>%
+#   ps_mutate(number_time = paste0(number,tp_suffix))
 # saveRDS(ps.its2.maj, here("ITS2", "ps.its2.maj.nd.RDS"))
 
 ##READ IN MAJORITY DATA
@@ -312,23 +400,24 @@ its2_colors = c("A4_sum" = "#ffaabb", "C47a_sum" = "#99ddff","C42_sum" = "#22555
                 "C46_sum" = "#222255","C3_sum" = "#77aadd",
                   "C1_sum" = "#eedd88",
                      "C45_sum" = "#ee8860", "D1_sum" = "#994455")
-#"A4","B19","B5","B2","C46","C3","C47a","C1","C45","C42","D1"
+#"A4","B19","B2","B5","C1","C3","C42","C45","C46","C47a","D1"
 
 ###SIDERASTREA SIDEREA###
-ss.site <- plot_bar(ps.ss.maj, x="id", fill="maj_its2") +
+ss.site <- plot_bar(ps.ss.maj, x="number_time", fill="maj_its2") +
   theme_classic(base_size = 30)+
   ylab("Relative Abundance")+
   facet_wrap(~site_zone.1, scales = "free")+
-  scale_fill_manual(name = "Majority ITS2", values = its2_colors, labels = c("A4","B19","B5","B2","C46","C3","C47a","C1","C45","C42","D1")) +
-  theme(axis.text.x=element_blank(),axis.ticks.x = element_blank(),axis.title.x = element_blank(),
+  scale_fill_manual(name = "Majority ITS2", values = its2_colors, labels = c("A4","B19","B2","B5","C1","C3","C42","C45","C46","C47a","D1")) +
+  theme(axis.text.x=element_text(angle = 90, size = 15),
         legend.title = element_text(size = 30),
         legend.text = element_text(size = 30))+
+  xlab("Sample ID") +
   ggtitle(substitute(paste(italic("Siderastrea siderea"))))
 ss.site
 
 #full plot - to put in supplementary, with all data across sites and time
 #numbers are individual samples here
-ss.site.time <- plot_bar(ps.ss.maj, x = "number", fill="maj_its2") + 
+ss.site.time <- plot_bar(ps.ss.maj, x = "number_time", fill="maj_its2") + 
   theme_classic(base_size = 30)+
   xlab("Coral Genotype")+
   ylab("Relative Abundance")+
@@ -338,24 +427,26 @@ ss.site.time <- plot_bar(ps.ss.maj, x = "number", fill="maj_its2") +
         legend.position = "none",
         legend.title = element_text(size = 30),
         legend.text = element_text(size = 30))+
+  xlab("Sample ID") +
   ggtitle(substitute(paste(italic("Siderastrea siderea"))))
 ss.site.time
 
 ###Siderastrea radians
-sr.site <- plot_bar(ps.sr.maj, x="id", fill="maj_its2") +
+sr.site <- plot_bar(ps.sr.maj, x="number_time", fill="maj_its2") +
   theme_classic(base_size = 30)+
   ylab("Relative Abundance")+
   facet_wrap(~site_zone.1, scales = "free")+
   scale_fill_manual(name = "Majority ITS2", values = its2_colors, labels = c("A4","B19","B5","B2","C46","C3","C47a","C1","C45","C42","D1")) +
-  theme(axis.text.x=element_blank(),axis.ticks.x = element_blank(),axis.title.x = element_blank(),
+  theme(axis.text.x=element_text(angle = 90, size = 15),
         legend.title = element_text(size = 30),
         legend.text = element_text(size = 30))+
+  xlab("Sample ID") +
   ggtitle(substitute(paste(italic("Siderastrea radians"))))
 sr.site
 
 #full plot - to put in supplementary, with all data acrosr sites and time
 #numbers are individual samples here
-sr.site.time <- plot_bar(ps.sr.maj, x = "number", fill="maj_its2") + 
+sr.site.time <- plot_bar(ps.sr.maj, x = "number_time", fill="maj_its2") + 
   theme_classic(base_size = 30)+
   xlab("Coral Genotype")+
   ylab("Relative Abundance")+
@@ -365,25 +456,26 @@ sr.site.time <- plot_bar(ps.sr.maj, x = "number", fill="maj_its2") +
         legend.position = "none",
         legend.title = element_text(size = 30),
         legend.text = element_text(size = 30))+
+  xlab("Sample ID") +
   ggtitle(substitute(paste(italic("Siderastrea radians"))))
 sr.site.time
 
 #####Branching Porites sp.
-pp.site <- plot_bar(ps.pp.maj, x="id", fill="maj_its2") +
+pp.site <- plot_bar(ps.pp.maj, x="number_time", fill="maj_its2") +
   theme_classic(base_size = 30)+
   ylab("Relative Abundance")+
   facet_wrap(~site_zone.1, scales = "free")+
   scale_fill_manual(name = "Majority ITS2", values = its2_colors, labels = c("A4","B19","B5","B2","C46","C3","C47a","C1","C45","C42","D1")) +
-  theme(axis.text.x=element_blank(),axis.ticks.x = element_blank(),
-        axis.title.x = element_blank(),
+  theme(axis.text.x=element_text(angle = 90, size = 15),
         legend.title = element_text(size = 30),
         legend.text = element_text(size = 30))+
+  xlab("Sample ID") +
   labs(title = expression(paste("Branching ", italic("Porites "), "sp.")))
 pp.site
 
 #full plot - to put in supplementary, with all data acropp sites and time
 #numbers are individual samples here
-pp.site.time <- plot_bar(ps.pp.maj, x = "number", fill="maj_its2") + 
+pp.site.time <- plot_bar(ps.pp.maj, x = "number_time", fill="maj_its2") + 
   theme_classic(base_size = 30)+
   xlab("Coral Genotype")+
   ylab("Relative Abundance")+
@@ -393,12 +485,13 @@ pp.site.time <- plot_bar(ps.pp.maj, x = "number", fill="maj_its2") +
         legend.position = "bottom",
         legend.title = element_text(size = 30),
         legend.text = element_text(size = 30))+
+  xlab("Sample ID") +
   labs(title = expression(paste("Branching ", italic("Porites "), "sp.")))
 pp.site.time
 
 ###put plots together
 sym_pp_sr_plot <- ggarrange(sr.site,pp.site, nrow=2, ncol = 1, legend = "none", labels = c("B","C"),font.label = list(size = 40))
-sym_all_plot <- ggarrange(ss.site,sym_pp_sr_plot, nrow=1, ncol = 2, legend = "right", common.legend = TRUE, labels = c("A"),font.label = list(size = 40))
+sym_all_plot <- ggarrange(ss.site,sym_pp_sr_plot, nrow=1, ncol = 2, legend = "right", common.legend = TRUE, labels = c("A"),font.label = list(size = 50))
 sym_all_plot
 ggsave(sym_all_plot, file=here("ITS2","its2.plot.all.pdf"),width=25,height=12)
 
@@ -560,10 +653,10 @@ sr.its2.rel.dom %>%
             p_maj_C1 = n_maj_C1/n,
             p_maj_D1 = n_maj_D1/n)
 #   m_y               n n_maj_C46 n_maj_C1 n_maj_D1 p_maj_C46 p_maj_C1 p_maj_D1
-#   <fct>         <int>     <int>    <int>    <int>     <dbl>    <dbl>    <dbl>
-# 1 March 2020       12        12        0        0     1        0       0     
-# 2 November 2020    15        11        2        1     0.733    0.133   0.0667
-# 3 November 2021    10        10        0        0     1        0       0     
+#   <chr>         <int>     <int>    <int>    <int>     <dbl>    <dbl>    <dbl>
+# 1 March_2020       12        12        0        0     1        0       0     
+# 2 November_2020    14        10        2        1     0.714    0.143   0.0714
+# 3 November_2021    10        10        0        0     1        0       0     
 
 #site
 sr.its2.rel.dom %>%
@@ -576,8 +669,8 @@ sr.its2.rel.dom %>%
             p_maj_C1 = n_maj_C1/n,
             p_maj_D1 = n_maj_D1/n)
 #   site_zone     n n_maj_C46 n_maj_C1 n_maj_D1 p_maj_C46 p_maj_C1 p_maj_D1
-#   <fct>     <int>     <int>    <int>    <int>     <dbl>    <dbl>    <dbl>
-# 1 SM_bay       18        16        2        0     0.889    0.111   0     
+#   <chr>     <int>     <int>    <int>    <int>     <dbl>    <dbl>    <dbl>
+# 1 SM_bay       17        15        2        0     0.882    0.118   0     
 # 2 SW_bay       19        17        0        1     0.895    0       0.0526
 
 ####PPOR######
@@ -593,9 +686,9 @@ pp.its2.rel.dom %>%
             p_maj_C42 = n_maj_C42/n,
             p_maj_C47a = n_maj_C47a/n)
 #   m_y               n n_maj_A4 n_maj_C42 n_maj_C47a p_maj_A4 p_maj_C42 p_maj_C47a
-#   <fct>         <int>    <int>     <int>      <int>    <dbl>     <dbl>      <dbl>
-# 1 November 2020    11        6         2          1    0.545     0.182     0.0909
-# 2 November 2021    22       10         4          8    0.455     0.182     0.364 
+#   <chr>         <int>    <int>     <int>      <int>    <dbl>     <dbl>      <dbl>
+# 1 November_2020    11        6         2          1    0.545     0.182     0.0909
+# 2 November_2021    12        6         2          4    0.5       0.167     0.333 
 
 #site
 pp.its2.rel.dom %>%
@@ -608,9 +701,9 @@ pp.its2.rel.dom %>%
             p_maj_C42 = n_maj_C42/n,
             p_maj_C47a = n_maj_C47a/n)
 #   site_zone     n n_maj_A4 n_maj_C42 n_maj_C47a p_maj_A4 p_maj_C42 p_maj_C47a
-#   <fct>     <int>    <int>     <int>      <int>    <dbl>     <dbl>      <dbl>
-# 1 SM_bay       18       16         2          0    0.889     0.111        0  
-# 2 SM_reef      15        0         4          9    0         0.267        0.6
+#   <chr>     <int>    <int>     <int>      <int>    <dbl>     <dbl>      <dbl>
+# 1 SM_bay       12       12         0          0        1     0          0    
+# 2 SM_reef      11        0         4          5        0     0.364      0.455
 
 
 ######MULTINOMIAL MODELS#####
@@ -676,7 +769,7 @@ anova(pp_null, pp_site, pp_time, pp_add, pp_int)
 AIC(pp_null, pp_site, pp_time, pp_add, pp_int)
 #lowest AIC = pp_site  df 4 AIC 20.36732
 
-Anova(pp_time, type = 3)
+Anova(pp_time, type =3)
 # Response: dominant_type
 #           LR Chisq Df Pr(>Chisq)    
 # site_nice    28.68  2  5.918e-07 ***  
