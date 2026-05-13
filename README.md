@@ -1,4 +1,4 @@
-These data accompany the manuscript that is currently in review:
+These data accompany the manuscript that is currently in review at Ecology & Evolution:
 
 # Stress-resistant Symbiodiniaceae and diverse microbial communities promote coral persistence in variable, multi-stressor environments
 
@@ -12,4 +12,4 @@ Maya E. Powell, Sarah L. Solomon, Verena Schoepf, Karl D. Castillo
 
 **ITS2:** Community composition graphs, summary statistics, and comparisons of majority ITS2 types
 
-**Figures:** Final figures, both main text and supplementary
+**Figures:** Final figures in the manuscript
